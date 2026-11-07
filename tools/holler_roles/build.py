@@ -13,7 +13,7 @@ import tempfile
 import tomllib
 
 import common
-from common import (BRIEF_CAP, DIST, LISTING_HARD, LISTING_SOFT, PLATFORM_PLUGIN, ROOT, copy_file, copy_tree, die,
+from common import (BRIEF_CAP, DIST, LISTING_HARD, LISTING_SOFT, PLATFORM_PLUGIN, ROOT, copy_file, copy_tree, die, in_overlay,
                     file_sha, json_dump, load_team, overlay_hash, parse_yaml, personal_path, read, reset_dir,
                     skill_frontmatter, source_commit, source_path, split_frontmatter, tree_hash, walk, write)
 from kits import IN_REPO, NAME_RE, load_kits, load_lock
@@ -61,7 +61,7 @@ printf '%s\n' '"}}'
 
 def agent_names():
     dirs = [os.path.join(ROOT, "profiles")] + ([os.path.join(common.OVERLAY, "profiles")] if common.OVERLAY else [])
-    return sorted({f[:-3] for d in dirs if os.path.isdir(d) for f in os.listdir(d) if f.endswith(".md")})
+    return sorted({f[:-3] for d in dirs if os.path.isdir(d) for f in os.listdir(d) if f.endswith(".md") and not f.startswith(".")})
 
 
 def read_profile(name):
@@ -83,6 +83,11 @@ def read_profile(name):
     h = p["holler"]
     if not (h.get("actor") and NAME_RE.match(h["actor"]) and h.get("role_text") and h.get("accepts")):
         die(f"profiles/{name}.md: holler needs actor, role_text and accepts")
+    if h["actor"] != name:
+        die(f"profiles/{name}.md: holler.actor {h['actor']!r} must equal the name {name!r} (Holler's runtime starts the agent "
+            f"under that actor base)")
+    if name == PLATFORM_PLUGIN:
+        die(f"profiles/{name}.md: {PLATFORM_PLUGIN} is the shared coordination plugin's name; choose another role name")
     # Holler's profile limits (holler_profile): role_text <= 2048 bytes; accepts <= 32 entries of <= 64 bytes, no control chars
     if len(" ".join(h["role_text"].split()).encode()) > 2048:
         die(f"profiles/{name}.md: holler.role_text over 2048 bytes")
@@ -113,6 +118,8 @@ def split_ref(ref, where):
 def resolve(profile, kits):
     """Resolve every reference. Returns a plan: plugins -> skills/agents/hooks with source dirs."""
     name = profile["name"]
+    if name in kits:
+        die(f"profiles/{name}.md: the role name {name} is also a kit's name; the role plugin and the kit plugin would collide")
     plan = {}   # plugin name -> {"kind", "kit", "skills": {skill: {"dir", "mode"}}, "agents": {}, "hooks": {}}
 
     def plugin(pname, kind, kit=None):
@@ -342,7 +349,7 @@ def build_claude(profile, plan, kits, out, texts, log):
             if meta["bundle"] == "whole":
                 listable = {s["name"]: s for s in meta["skills"]}
                 ksk = os.path.join(kdir, "skills")
-                for entry in sorted(os.listdir(ksk)):
+                for entry in sorted(e for e in os.listdir(ksk) if not (e.startswith(".") and in_overlay(ksk))):
                     d = os.path.join(ksk, entry)
                     if not os.path.isdir(d):
                         continue
@@ -352,7 +359,7 @@ def build_claude(profile, plan, kits, out, texts, log):
                     if entry not in pl["skills"] and os.path.isfile(os.path.join(d, "SKILL.md")):
                         add_frontmatter_flags(os.path.join(root, "skills", entry, "SKILL.md"), HIDDEN_FLAGS)
                         add_openai_policy(os.path.join(root, "skills", entry))
-                for f in sorted(os.listdir(ksk)):
+                for f in sorted(e for e in os.listdir(ksk) if not (e.startswith(".") and in_overlay(ksk))):
                     if os.path.isfile(os.path.join(ksk, f)):
                         copy_file(os.path.join(ksk, f), os.path.join(root, "skills", f))
         # selected skills (kit "whole" bundles already copied them)
@@ -601,7 +608,7 @@ def build_agent(name, kits, dest_root, log, team):
         elif src_name == IN_REPO:
             commit, h = None, lock["kits"][k]["content_hash"]   # this repository's kits/: its commit is source.holler-agents
         else:
-            commit, h = None, tree_hash(kdir)
+            commit, h = None, tree_hash(kdir, skip_dots=in_overlay(kdir))
         srcs[k] = {"source": src_name, "commit": commit, "version": meta["version"], "licence": meta["licence"],
                    "content_hash": h}
     write(os.path.join(out, "MANIFEST.json"), json_dump({

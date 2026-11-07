@@ -17,7 +17,7 @@ description: "Explains one Holler feature in one sentence, in the app's own word
   - **Ask privately**, **Discuss together**, **Preview audience**;
   - **Connect**, **Reconnect**.
 
-  These are verified against holler-desktop `origin/main` (c34236b).
+  These are the desktop app's labels as of Holler 0.8.2.
 - **Teach in conversation when the app has no screen for the feature.** The app has no screen for:
   - naming agents;
   - taking over an inbox;

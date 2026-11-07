@@ -4,9 +4,10 @@ fresh-history public repository, then scan what was copied.
 The public part is the tracked files matched by PUBLIC.txt: one path or folder per line, `!path` to exclude, `#`
 comments. Anything not listed stays private, so a new file is private until someone lists it.
 
-The scan fails the export when an exported file contains:
+The scan fails the export when an exported file, or its path, contains (non-UTF-8 bytes are replaced, not skipped):
   - a home-folder path (/Users/<name>/, /home/<name>/) other than a placeholder;
   - something shaped like a credential (private keys, GitHub, Anthropic, OpenAI, Slack, AWS tokens);
+  - an internal Holler id (msg_, chn_, thr_, req_, run_ followed by hex) from a real workspace;
   - the name of a file that stays private (a link that would dangle in the public repository);
   - a word from the deny file (default: .export-deny when present; keep it out of PUBLIC.txt).
 The copy is left in <dest> either way, so the hits can be read in place.
@@ -19,7 +20,8 @@ from common import ROOT, copy_file, die, git, read
 
 SECRET = re.compile(
     r"-----BEGIN [A-Z ]*PRIVATE KEY-----|\bgh[pousr]_[A-Za-z0-9]{30,}|\bgithub_pat_[A-Za-z0-9_]{30,}|\bsk-ant-[A-Za-z0-9_-]{20,}"
-    r"|\bsk-(?:proj-)?[A-Za-z0-9]{32,}|\bxox[abprs]-[A-Za-z0-9-]{10,}|\bAKIA[0-9A-Z]{16}\b")
+    r"|\bsk-(?:proj-)?[A-Za-z0-9_-]{32,}|\bxox[abprs]-[A-Za-z0-9-]{10,}|\bAKIA[0-9A-Z]{16}\b")
+HOLLER_ID = re.compile(r"\b(?:msg|chn|thr|req|run)_[0-9a-f]{8,}\b")   # message, channel, thread ids from a real workspace
 HOME = re.compile(r"/(?:Users|home)/([A-Za-z0-9._-]+)")
 PLACEHOLDERS = {"you", "me", "user", "username", "name", "runner", "example", "USER", "alice", "bob"}
 DEFAULT_DENY = ".export-deny"
@@ -51,27 +53,32 @@ def deny_words(argv):
     return [w.strip() for w in read(path).splitlines() if w.strip() and not w.lstrip().startswith("#")]
 
 
+def scan_line(rel, n, line, name_re, word_re, hits):
+    for m in HOME.finditer(line):
+        if m.group(1) not in PLACEHOLDERS and not m.group(1).startswith(("<", "$")):
+            hits.append((rel, n, "home path", m.group(0)))
+    if SECRET.search(line):
+        hits.append((rel, n, "credential-shaped", SECRET.search(line).group(0)[:12] + "…"))
+    if HOLLER_ID.search(line):
+        hits.append((rel, n, "internal Holler id", HOLLER_ID.search(line).group(0)))
+    if name_re and name_re.search(line):
+        hits.append((rel, n, "names a private file", name_re.search(line).group(1)))
+    if word_re and word_re.search(line):
+        hits.append((rel, n, "denied word", word_re.search(line).group(0)))
+
+
 def scan(dest, files, private_names, words):
+    """Scan every exported path and file. Bytes that aren't UTF-8 are replaced, never skipped, so a credential in a
+    latin-1 or binary file is still found. Line 0 means the path itself."""
     hits = []
     word_re = re.compile("|".join(re.escape(w) for w in words), re.I) if words else None
     name_re = re.compile(r"(?<![\w.-])(" + "|".join(re.escape(n) for n in sorted(private_names)) + r")(?![\w-])") if private_names else None
     for rel in files:
+        scan_line(rel, 0, rel, name_re, word_re, hits)
         with open(os.path.join(dest, rel), "rb") as f:
-            raw = f.read()
-        try:
-            text = raw.decode("utf-8")
-        except UnicodeDecodeError:
-            continue
+            text = f.read().decode("utf-8", errors="replace")
         for n, line in enumerate(text.splitlines(), 1):
-            for m in HOME.finditer(line):
-                if m.group(1) not in PLACEHOLDERS and not m.group(1).startswith(("<", "$")):
-                    hits.append((rel, n, "home path", m.group(0)))
-            if SECRET.search(line):
-                hits.append((rel, n, "credential-shaped", SECRET.search(line).group(0)[:12] + "…"))
-            if name_re and name_re.search(line):
-                hits.append((rel, n, "names a private file", name_re.search(line).group(1)))
-            if word_re and word_re.search(line):
-                hits.append((rel, n, "denied word", word_re.search(line).group(0)))
+            scan_line(rel, n, line, name_re, word_re, hits)
     return hits
 
 

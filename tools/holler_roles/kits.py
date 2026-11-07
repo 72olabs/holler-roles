@@ -4,7 +4,7 @@ import os
 import re
 
 import common
-from common import LOCK_PATH, RESERVED_SOURCES, ROOT, die, git, json_dump, read, skill_frontmatter, tree_hash, write
+from common import LOCK_PATH, PLATFORM_PLUGIN, RESERVED_SOURCES, ROOT, die, git, json_dump, read, skill_frontmatter, tree_hash, write
 
 NAME_RE = re.compile(r"^[a-z][a-z0-9-]*$")
 IN_REPO = "holler-roles"      # the source name of this repository's own kits/
@@ -62,6 +62,8 @@ def load_kit(kit_dir):
             die(f"{kit_dir}/kit.json: missing {key}")
     if meta["kit_format"] != 1 or not NAME_RE.match(meta["name"]) or meta["name"] in RESERVED_SOURCES:
         die(f"{kit_dir}/kit.json: bad kit_format or name")
+    if meta["name"] == PLATFORM_PLUGIN:
+        die(f"{kit_dir}/kit.json: {PLATFORM_PLUGIN} is the shared coordination plugin's name; a kit can't use it")
     if meta["bundle"] not in ("skills", "whole"):
         die(f"{kit_dir}/kit.json: bundle must be skills or whole")
     for f in meta["licence_files"] + meta["notices"]:

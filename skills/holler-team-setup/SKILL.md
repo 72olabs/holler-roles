@@ -52,8 +52,8 @@ Also list what this setup will **not** do:
 - confirm work for you.
 
 Before using a value, check its exact field names against the `channel.create` input schema in `holler_capabilities`.
-- Kinds are `dm` (exactly two participants) or `named` (v0.8.2:internal/store/sqlite/conversation.go:184-206).
-- A listed `human:` participant must already be registered through the app (conversation.go:285-291).
+- Kinds are `dm` (exactly two participants) or `named` (Holler 0.8.2).
+- A listed `human:` participant must already be registered through the app.
 
 ## 4. Apply only what was approved
 

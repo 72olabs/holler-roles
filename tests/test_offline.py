@@ -86,6 +86,14 @@ class KitTests(unittest.TestCase):
                 load_kits()
 
     @unittest.skipUnless(kits_ready(), "kits do not match kits.lock")
+    def test_kit_cannot_take_the_platform_plugin_name(self):
+        from kits import load_kits
+        with Overlay() as ov:
+            self.kit(ov, "holler-platform")
+            with self.assertRaisesRegex(BuildError, "can't use it"):
+                load_kits()
+
+    @unittest.skipUnless(kits_ready(), "kits do not match kits.lock")
     def test_overlay_kit_cannot_shadow_a_repository_kit(self):
         from kits import load_kits
         with Overlay() as ov:
@@ -165,6 +173,81 @@ class OverlayBuildTests(unittest.TestCase):
             agents_md = common.read(os.path.join(bundle, "helper", "codex", "home-template", "AGENTS.md"))
             self.assertIn("Answer in short paragraphs.", agents_md)
 
+    def test_overlay_dotfiles_are_not_built(self):
+        from scaffold import cmd_new
+        with Overlay() as ov:
+            quiet(cmd_new, ["helper"])
+            prof = os.path.join(ov.dir, "profiles", "helper.md")
+            text = common.read(prof).replace("  - holler/holler-handoff\n", "  - holler/holler-handoff\n  - own/notes\n")
+            ov.write("profiles/helper.md", text)
+            ov.write("skills/notes/SKILL.md", "---\nname: notes\ndescription: Take notes.\n---\nNotes.\n")
+            ov.write("skills/notes/.env", "TOKEN=private\n")
+            ov.write("skills/notes/.cache/x.txt", "private\n")
+            ov.write("team.json", json.dumps({"agents": ["helper"]}))
+            results, tar, bundle = self.build(ov)
+            files = [os.path.join(dp, f) for dp, _, fs in os.walk(os.path.join(bundle, "helper")) for f in fs]
+            self.assertTrue(any(f.endswith(os.path.join("notes", "SKILL.md")) for f in files))
+            self.assertFalse([f for f in files if ".env" in f or ".cache" in f], "overlay dotfiles must not be built")
+
+    def test_symlink_inside_an_ignored_dot_folder_is_ignored(self):
+        with Overlay() as ov:
+            ov.write(".venv/lib/x.py", "x = 1\n")
+            os.symlink("lib", os.path.join(ov.dir, ".venv", "lib64"))
+            ov.write("personal/eng.md", "Short replies.\n")
+            common.load_team()          # no "symlinked directory" error
+            self.assertTrue(common.overlay_hash().startswith("sha256:"))
+
+    def test_ignored_files_in_an_overlay_kit_change_nothing(self):
+        from build import build_all
+        with Overlay() as ov:
+            KitTests.kit(None, ov, "mine")
+            quiet(__import__("scaffold").cmd_new, ["helper"])
+            prof = os.path.join(ov.dir, "profiles", "helper.md")
+            ov.write("profiles/helper.md", common.read(prof).replace("  - holler/holler-handoff\n", "  - holler/holler-handoff\n  - mine/hello\n"))
+            ov.write("team.json", json.dumps({"agents": ["helper"]}))
+            shas = []
+            for secret in ("", "TOKEN=one\n"):
+                if secret:
+                    ov.write("kits/mine/.env", secret)
+                    ov.write("kits/mine/skills/hello/.cache/x", secret)
+                out = tempfile.mkdtemp(prefix="holler-roles-test-dist-")
+                self.addCleanup(shutil.rmtree, out, True)
+                _, tar, bundle = quiet(build_all, ["helper"], out, False)
+                shas.append(tar[1])
+                self.assertFalse([f for dp, _, fs in os.walk(bundle) for f in fs if f == ".env" or dp.endswith(".cache")])
+            self.assertEqual(shas[0], shas[1], "a change to ignored overlay files must not change the bundle")
+
+    def test_overlay_hash_covers_the_executable_bit(self):
+        with Overlay() as ov:
+            ov.write("skills/notes/run.sh", "#!/bin/sh\n")
+            before = common.overlay_hash()
+            os.chmod(os.path.join(ov.dir, "skills", "notes", "run.sh"), 0o755)
+            self.assertNotEqual(common.overlay_hash(), before)
+
+    def test_hidden_overlay_profiles_are_ignored(self):
+        with Overlay() as ov:
+            ov.write("profiles/.draft.md", "not a profile\n")
+            from build import agent_names
+            self.assertNotIn(".draft", common.load_team()["agents"])
+            self.assertNotIn(".draft", agent_names())
+
+    def test_role_names_that_collide_are_refused(self):
+        from scaffold import cmd_new
+        with Overlay():
+            for taken in ("holler-platform", "pstack"):
+                with self.subTest(taken), self.assertRaisesRegex(BuildError, "taken"):
+                    quiet(cmd_new, [taken])
+
+    def test_actor_must_equal_the_name(self):
+        from build import read_profile
+        from scaffold import cmd_new
+        with Overlay() as ov:
+            quiet(cmd_new, ["helper"])
+            prof = os.path.join(ov.dir, "profiles", "helper.md")
+            ov.write("profiles/helper.md", common.read(prof).replace("  actor: helper", "  actor: eng"))
+            with self.assertRaisesRegex(BuildError, "must equal the name"):
+                read_profile("helper")
+
     def test_scaffold_refuses_to_overwrite(self):
         from scaffold import cmd_new
         with Overlay():
@@ -196,6 +279,34 @@ class ExportScanTests(unittest.TestCase):
         kinds = sorted({h[2] for h in hits})
         self.assertEqual(kinds, ["credential-shaped", "denied word", "home path", "names a private file"])
         self.assertFalse([h for h in hits if h[1] == 5], "placeholders are allowed")
+
+    def test_scan_reads_non_utf8_files_and_paths(self):
+        from export import scan
+        d = tempfile.mkdtemp(prefix="holler-roles-test-export-")
+        self.addCleanup(shutil.rmtree, d, True)
+        token = ("gh" + "p_" + "B" * 36).encode()
+        with open(os.path.join(d, "latin1.txt"), "wb") as f:
+            f.write(b"caf\xe9 " + token + b"\n")
+        folder = "codename" + "-notes"
+        os.makedirs(os.path.join(d, folder))
+        with open(os.path.join(d, folder, "SKILL.md"), "w") as f:
+            f.write("clean text\n")
+        with open(os.path.join(d, "ids.md"), "w") as f:
+            f.write("relayed as " + "msg" + "_a2b3038a" + "ff\n")
+        hits = scan(d, ["latin1.txt", folder + "/SKILL.md", "ids.md"], set(), ["codename"])
+        self.assertIn(("latin1.txt", "credential-shaped"), {(h[0], h[2]) for h in hits})
+        self.assertIn((folder + "/SKILL.md", 0, "denied word"), {(h[0], h[1], h[2]) for h in hits})
+        self.assertIn(("ids.md", "internal Holler id"), {(h[0], h[2]) for h in hits})
+
+    def test_scan_finds_openai_keys_with_url_safe_characters(self):
+        from export import scan
+        d = tempfile.mkdtemp(prefix="holler-roles-test-export-")
+        self.addCleanup(shutil.rmtree, d, True)
+        body = "A" * 12
+        with open(os.path.join(d, "keys.md"), "w") as f:
+            f.write("sk-" + "proj-" + body + "_" + "B" * 30 + "\n" + "sk-" + body + "-" + "C" * 30 + "\n")
+        hits = [h for h in scan(d, ["keys.md"], set(), []) if h[2] == "credential-shaped"]
+        self.assertEqual(sorted(h[1] for h in hits), [1, 2])
 
 
 if __name__ == "__main__":

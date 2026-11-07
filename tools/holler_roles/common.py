@@ -57,10 +57,14 @@ def copy_file(src, dst):
         write(dst, f.read(), executable=is_exec(src))
 
 
-def walk(path):
-    """Relative paths of files under path, sorted. Symlinks are an error (dist has none)."""
+def walk(path, skip_dots=False):
+    """Relative paths of files under path, sorted. Symlinked directories are an error (dist has none). With skip_dots,
+    dotfiles are left out and dot-folders are pruned before anything inside them is looked at (overlay sources)."""
     out = []
     for dirpath, dirnames, filenames in os.walk(path):
+        if skip_dots:
+            dirnames[:] = [d for d in dirnames if not d.startswith(".")]
+            filenames = [f for f in filenames if not f.startswith(".")]
         dirnames.sort()
         for d in dirnames:
             if os.path.islink(os.path.join(dirpath, d)):
@@ -73,10 +77,18 @@ def walk(path):
     return sorted(out)
 
 
+def in_overlay(path):
+    """True for a path inside the user's overlay, whose dotfiles and dot-folders are never built (spec/OVERLAY.md)."""
+    return bool(OVERLAY) and os.path.realpath(path).startswith(OVERLAY + os.sep)
+
+
 def copy_tree(src, dst, skip_dirs=(), skip_files=()):
-    for rel in walk(src):
+    hide_dots = in_overlay(src)
+    for rel in walk(src, skip_dots=hide_dots):
         parts = rel.split(os.sep)
         if any(p in skip_dirs for p in parts[:-1]) or parts[-1] in skip_files or "__pycache__" in parts:
+            continue
+        if hide_dots and any(p.startswith(".") for p in parts):
             continue
         copy_file(os.path.join(src, rel), os.path.join(dst, rel))
 
@@ -89,10 +101,10 @@ def file_sha(path):
     return h.hexdigest()
 
 
-def tree_hash(path, exclude=()):
-    """sha256 over (relative path, exec bit, content hash) of every file under path."""
+def tree_hash(path, exclude=(), skip_dots=False):
+    """sha256 over (relative path, exec bit, content hash) of every file under path (dotfiles left out with skip_dots)."""
     h = hashlib.sha256()
-    for rel in walk(path):
+    for rel in walk(path, skip_dots=skip_dots):
         if rel in exclude:
             continue
         full = os.path.join(path, rel)
@@ -201,11 +213,9 @@ def overlay_hash():
     if not OVERLAY:
         return None
     h = hashlib.sha256()
-    for rel in walk(OVERLAY):
-        if any(part.startswith(".") for part in rel.split(os.sep)):
-            continue
+    for rel in walk(OVERLAY, skip_dots=True):
         full = os.path.join(OVERLAY, rel)
-        h.update(f"F\0{rel}\0{file_sha(full)}\0".encode())
+        h.update(f"F\0{rel}\0{'x' if is_exec(full) else '-'}\0{file_sha(full)}\0".encode())
     return "sha256:" + h.hexdigest()
 
 
@@ -229,7 +239,7 @@ def load_team():
     else:
         prof = os.path.join(OVERLAY, "profiles")
         if os.path.isdir(prof):
-            agents += sorted(f[:-3] for f in os.listdir(prof) if f.endswith(".md") and f[:-3] not in agents)
+            agents += sorted(f[:-3] for f in os.listdir(prof) if f.endswith(".md") and not f.startswith(".") and f[:-3] not in agents)
     if not agents or len(set(agents)) != len(agents):
         die("the team needs at least one agent and no duplicates")
     team["agents"] = agents

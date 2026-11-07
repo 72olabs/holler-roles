@@ -70,6 +70,10 @@ def cmd_new(argv):
     name = args[0]
     if not NAME_RE.match(name) or len(name) > 64:
         die(f"bad role name {name!r}: lowercase letters, digits and dashes, starting with a letter")
+    from common import PLATFORM_PLUGIN
+    from kits import load_kits
+    if name == PLATFORM_PLUGIN or name in load_kits(verify=False):
+        die(f"role name {name!r} is taken by the {PLATFORM_PLUGIN} plugin or a kit; choose another")
     display = argv[argv.index("--display") + 1] if "--display" in argv else name.replace("-", " ").title()
     root = common.OVERLAY or common.ROOT
     profile = os.path.join(root, "profiles", f"{name}.md")
