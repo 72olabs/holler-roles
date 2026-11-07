@@ -1,0 +1,88 @@
+{
+  "kit_format": 1,
+  "name": "design-review-rules",
+  "version": "1.0.0",
+  "description": "Rule sets for an independent design reviewer: review passes, slop tells and an accessibility and interface floor.",
+  "upstream": "https://github.com/garrytan/gstack",
+  "sha": "b04cc35832183a89ed71eed628de15a6f315a1a8",
+  "licence": "MIT AND Apache-2.0",
+  "upstreams": [
+    {
+      "name": "gstack",
+      "url": "https://github.com/garrytan/gstack",
+      "sha": "b04cc35832183a89ed71eed628de15a6f315a1a8",
+      "licence": "MIT (gstack, refero_skill); Apache-2.0 (impeccable, OpenDesign, Anthropic) notices",
+      "path": "plan-design-review, design-review, review"
+    },
+    {
+      "name": "open-design",
+      "url": "https://github.com/nexu-io/open-design",
+      "sha": "e03d5c23f308c39f4de7c057568df66c29a84385",
+      "licence": "Apache-2.0",
+      "path": "craft/anti-ai-slop.md, craft/accessibility-baseline.md"
+    },
+    {
+      "name": "anthropics/skills",
+      "url": "https://github.com/anthropics/skills",
+      "sha": "dbd4588f9e1033efb41dad4bef2f7947c8993d44",
+      "licence": "Apache-2.0",
+      "path": "skills/frontend-design"
+    },
+    {
+      "name": "web-interface-guidelines",
+      "url": "https://github.com/vercel-labs/web-interface-guidelines",
+      "sha": "434b7f91364665f2f733b310ec54809bf8f37937",
+      "licence": "MIT",
+      "path": "command.md"
+    },
+    {
+      "name": "impeccable (via gstack)",
+      "url": "https://github.com/pbakaus/impeccable",
+      "sha": "see gstack NOTICE.md at b04cc35",
+      "licence": "Apache-2.0",
+      "path": "surface classifier, rule ids"
+    },
+    {
+      "name": "refero_skill (via open-design)",
+      "url": "https://github.com/referodesign/refero_skill",
+      "sha": "2382e51",
+      "licence": "MIT",
+      "path": "(adapted by OpenDesign)"
+    }
+  ],
+  "licence_files": [
+    "LICENSE-gstack",
+    "LICENSE-Apache-2.0.txt",
+    "LICENSE-open-design",
+    "LICENSE-refero_skill",
+    "LICENSE-web-interface-guidelines",
+    "LICENSE-anthropics-skills.txt"
+  ],
+  "notices": [
+    "NOTICE.md",
+    "PROVENANCE.md"
+  ],
+  "patches": [
+    "patches/upstream/a11y-floor.patch"
+  ],
+  "bundle": "skills",
+  "skills": [
+    {
+      "name": "design-review-passes",
+      "path": "skills/design-review-passes",
+      "description": "Review passes for rendered or planned UI: name the surface mode (persuade, operate, read, experience), then information architecture, state coverage, journey, AI-slop risk, design-system alignment, responsive and accessibility, unresolved decisions, plus the trunk test and audit categories. Use when reviewing someone else's design work from screenshots or a plan."
+    },
+    {
+      "name": "slop-tells",
+      "path": "skills/slop-tells",
+      "description": "Visual tells of generated, default-looking UI (indigo accents, trust gradients, emoji icons, template chrome, overused faces, card soup), with ids and severities. Use when reviewing screenshots or a plan for AI-slop and template defaults; DESIGN.md and the brief win over any tell."
+    },
+    {
+      "name": "a11y-floor",
+      "path": "skills/a11y-floor",
+      "description": "Accessibility and interface floor for reviewing UI: contrast, touch targets, focus visibility, labels, keyboard and semantic structure, ARIA, reduced motion, forms, typography, content handling, dark mode and i18n rules. Use when reviewing screenshots, a preview or a plan for accessibility and interface defects."
+    }
+  ],
+  "agents": [],
+  "hooks": []
+}

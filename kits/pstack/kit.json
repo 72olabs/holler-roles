@@ -1,0 +1,149 @@
+{
+  "kit_format": 1,
+  "name": "pstack",
+  "version": "1.0.0",
+  "description": "pstack engineering playbooks and skills (Lauren Tan's pstack, Claude Code and Codex port by Michael Denyer). The playbooks are converted into auto-invocable skills; the rest of the tree ships as hidden reference files.",
+  "upstream": "https://github.com/michael-denyer/pstack-claude",
+  "sha": "356c6e0f978df729eb16f227d795f34d221c5aad",
+  "licence": "MIT",
+  "upstreams": [
+    {
+      "name": "pstack-claude",
+      "url": "https://github.com/michael-denyer/pstack-claude",
+      "sha": "356c6e0f978df729eb16f227d795f34d221c5aad",
+      "licence": "MIT",
+      "path": "plugins/pstack"
+    }
+  ],
+  "licence_files": [
+    "LICENSE",
+    "LICENSE-cursor-team-kit",
+    "LICENSE-thermos"
+  ],
+  "notices": [
+    "NOTICE.md",
+    "NOTICE-skills.md",
+    "MODIFICATIONS.md",
+    "PROVENANCE.md"
+  ],
+  "patches": [
+    "patches/upstream/bug-fix.patch",
+    "patches/upstream/feature.patch",
+    "patches/upstream/figure-it-out.patch",
+    "patches/upstream/investigation.patch",
+    "patches/upstream/pause-safely.patch",
+    "patches/upstream/perf-issue.patch",
+    "patches/upstream/prototype.patch",
+    "patches/upstream/refactoring.patch",
+    "patches/upstream/session-pickup.patch",
+    "patches/upstream/why.patch"
+  ],
+  "bundle": "whole",
+  "skills": [
+    {
+      "name": "investigation",
+      "path": "skills/investigation",
+      "description": "Answer a question about the code without changing it. Use for \"how does X work\", \"why does X do Y\", \"where is X handled\", \"what calls this\", \"are we sure about X\", \"should we do X or Y\", \"explain this code\". Read-only; replies with cited evidence.",
+      "added": true
+    },
+    {
+      "name": "bug-fix",
+      "path": "skills/bug-fix",
+      "description": "Fix broken behavior. Use when the user reports a bug or regression: \"X is broken\", \"doesn't work\", \"stopped working\", \"still shows X after Y\", \"wrong output\", \"error when\", \"crashes\", \"used to work\", \"fix this\". Reproduce first, find the root cause, fix it, and show the failing-then-passing run.",
+      "added": true
+    },
+    {
+      "name": "feature",
+      "path": "skills/feature",
+      "description": "Build new or changed behavior. Use for \"add X\", \"build X\", \"implement X\", \"support X\", \"new command\", \"new endpoint\", \"new screen\", \"add an option\", \"make it do X\", \"let users X\". Names the data shape first, then builds in small verified steps.",
+      "added": true
+    },
+    {
+      "name": "refactoring",
+      "path": "skills/refactoring",
+      "description": "Change code structure without changing behavior. Use for \"refactor\", \"clean up\", \"rename X\", \"extract\", \"inline\", \"dedupe\", \"move X to Y\", \"split this file\", \"simplify this\". Pins current behavior first and proves it unchanged after.",
+      "added": true
+    },
+    {
+      "name": "perf-issue",
+      "path": "skills/perf-issue",
+      "description": "Make something measurably faster or lighter. Use for \"X is slow\", \"takes N seconds\", \"laggy\", \"speed up X\", \"high CPU\", \"memory keeps growing\", \"perf regression\". Captures a baseline, fixes from the trace, reports before and after numbers.",
+      "added": true
+    },
+    {
+      "name": "prototype",
+      "path": "skills/prototype",
+      "description": "Build a throwaway sketch to settle a decision by running it. Use for \"prototype\", \"spike\", \"mock it up\", \"sketch it\", \"try a quick version\", \"which of these works better\", \"try this layout\". Not production code.",
+      "added": true
+    },
+    {
+      "name": "session-pickup",
+      "path": "skills/session-pickup",
+      "description": "Resume earlier work. Use for \"where were we\", \"catch me up\", \"what's left\", \"pick up where we left off\", \"continue from yesterday\", \"resume\", \"take over this branch\". Reads the saved checkpoint or prior transcript before doing anything.",
+      "added": true
+    },
+    {
+      "name": "pause-safely",
+      "path": "skills/pause-safely",
+      "description": "Stop in-flight work so it can be resumed. Use for \"wrapping up\", \"stopping here\", \"pause\", \"park this\", \"save where we are\", \"I have to go\", \"before you run out of context\". Writes and checks a resume note.",
+      "added": true
+    },
+    {
+      "name": "figure-it-out",
+      "path": "skills/figure-it-out",
+      "description": "Design a step-by-step plan for a large or unclear task that no other playbook fits. Use for \"figure it out\", \"not sure where to start\", a migration across many files, a multi-part change, or work the user will review later. One run, one task; it is not Orchestrate or Autopilot."
+    },
+    {
+      "name": "how",
+      "path": "skills/how",
+      "description": "Use for \"how does X work\", code walkthroughs before changing something, and placement / ownership / layering questions (\"where should this live\", \"which package owns this\", \"is this the right layer\"). Explains subsystem architecture, runtime flow, onboarding mental models. Use why for motivation."
+    },
+    {
+      "name": "why",
+      "path": "skills/why",
+      "description": "Use for 'why does X work this way', 'why we picked Y', design rationale, regressions, postmortems or data-backed thresholds. Queries the available evidence sources (source control, issues, docs, chat, observability, error tracking, analytics) in parallel and returns a cited read on decisions and tradeoffs. Use how for runtime behavior."
+    },
+    {
+      "name": "architect",
+      "path": "skills/architect",
+      "description": "Sketch types, signatures, and module structure before code, then stay in the loop while implementation fills in. Use for /architect, 'architect this', 'design this', or non-trivial work where jumping to code would lock in the wrong shape."
+    },
+    {
+      "name": "interrogate",
+      "path": "skills/interrogate",
+      "description": "Use for \"interrogate\", \"adversarial review\", \"multi-model review\", \"challenge this\", \"stress test this code\", \"find blind spots\", or \"tear this apart\". Multiple LLM reviewers challenge changes from independent angles."
+    },
+    {
+      "name": "unslop",
+      "path": "skills/unslop",
+      "description": "Cut AI tells from any writing."
+    },
+    {
+      "name": "tdd",
+      "path": "skills/tdd",
+      "description": "Use only when the user explicitly asks for TDD, a failing test, or a regression test, OR when the bug has an obvious cheap local test target. Skip when the test path is unclear, expensive, integration-heavy, or not requested."
+    },
+    {
+      "name": "create-verification-skill",
+      "path": "skills/create-verification-skill",
+      "description": "Generate a project-local verification skill that drives your app the way a user does \u2014 any language, framework, or platform. Use for /create-verification-skill, \"make a control skill for this repo\", \"make a driver skill for this repo\", or when a project has no scripted way to prove UI/CLI/service behavior."
+    }
+  ],
+  "agents": [
+    {
+      "name": "poteto-agent",
+      "path": "agents/poteto-agent.md",
+      "harnesses": [
+        "claude"
+      ]
+    },
+    {
+      "name": "comment-sicko",
+      "path": "agents/comment-sicko.md",
+      "harnesses": [
+        "claude"
+      ]
+    }
+  ],
+  "hooks": []
+}

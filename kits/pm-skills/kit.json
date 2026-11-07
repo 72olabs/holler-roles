@@ -1,0 +1,60 @@
+{
+  "kit_format": 1,
+  "name": "pm-skills",
+  "version": "1.0.0",
+  "description": "Product discovery and execution skills from pm-skills: interview scripts, opportunity solution trees, strategy red-teaming, PRDs and beachhead segments.",
+  "upstream": "https://github.com/phuryn/pm-skills",
+  "sha": "07b34f64ee828df08953f505b7f747aef85ae7c6",
+  "licence": "MIT",
+  "upstreams": [
+    {
+      "name": "pm-skills",
+      "url": "https://github.com/phuryn/pm-skills",
+      "sha": "07b34f64ee828df08953f505b7f747aef85ae7c6",
+      "licence": "MIT",
+      "path": "pm-execution/skills/create-prd"
+    }
+  ],
+  "licence_files": [
+    "LICENSE"
+  ],
+  "notices": [
+    "NOTICE.md",
+    "PROVENANCE.md"
+  ],
+  "patches": [
+    "patches/upstream/beachhead-segment.patch",
+    "patches/upstream/create-prd.patch",
+    "patches/upstream/strategy-red-team.patch"
+  ],
+  "bundle": "skills",
+  "skills": [
+    {
+      "name": "interview-script",
+      "path": "skills/interview-script",
+      "description": "Create a structured customer interview script with JTBD probing questions, warm-up, core exploration, and wrap-up sections. Follows The Mom Test principles \u2014 no leading questions, no pitching, focus on past behavior. Use when preparing for user interviews, creating interview guides, or planning discovery research."
+    },
+    {
+      "name": "opportunity-solution-tree",
+      "path": "skills/opportunity-solution-tree",
+      "description": "Build an Opportunity Solution Tree (OST) to structure product discovery \u2014 map a desired outcome to opportunities, solutions, and experiments. Based on Teresa Torres' Continuous Discovery Habits. Use when structuring discovery work, mapping opportunities to solutions, or deciding what to build next."
+    },
+    {
+      "name": "strategy-red-team",
+      "path": "skills/strategy-red-team",
+      "description": "Red-team a PRD, roadmap or strategy by attacking its load-bearing assumptions: steelman, attack, rank failure modes by impact \u00d7 likelihood \u00d7 cheapness to test, and give the cheapest test and kill criteria for each. Use when stress-testing a plan, pressure-testing a strategy, challenging assumptions, or before an executive review."
+    },
+    {
+      "name": "create-prd",
+      "path": "skills/create-prd",
+      "description": "Create a lean, decision-ready PRD with an 8-section template (summary, contacts, background, objective, segments, value propositions, solution, release); one to two pages by default, a fuller spec on request. Use when writing a PRD, documenting product requirements, preparing a feature spec, or reviewing an existing PRD."
+    },
+    {
+      "name": "beachhead-segment",
+      "path": "skills/beachhead-segment",
+      "description": "Identify the first beachhead market segment for a product launch. Evaluates segments against burning pain, willingness to pay, winnability, and referral potential, with an evidence label on every claim. Use when choosing a first market, targeting an initial customer segment, or planning market entry strategy."
+    }
+  ],
+  "agents": [],
+  "hooks": []
+}

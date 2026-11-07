@@ -1,0 +1,58 @@
+--- a/pm-go-to-market/skills/beachhead-segment/SKILL.md
++++ b/skills/beachhead-segment/SKILL.md
+@@ -1,6 +1,6 @@
+ ---
+ name: beachhead-segment
+-description: "Identify the first beachhead market segment for a product launch. Evaluates segments against burning pain, willingness to pay, winnable market share, and referral potential. Use when choosing a first market, targeting an initial customer segment, or planning market entry strategy."
++description: "Identify the first beachhead market segment for a product launch. Evaluates segments against burning pain, willingness to pay, winnability, and referral potential, with an evidence label on every claim. Use when choosing a first market, targeting an initial customer segment, or planning market entry strategy."
+ ---
+ # Beachhead Segment
+ 
+@@ -32,8 +32,8 @@
+ - Decision-maker has autonomy or influence over budget
+ - No free or DIY alternatives that fully satisfy need
+ 
+-### 3. Winnable Market Share
+-Can you realistically capture 60-70% of this segment in 3-18 months?
++### 3. Winnability
++Can you realistically win this segment with the resources you have now?
+ - Segment is large enough but not oversaturated
+ - Limited competition or easy differentiation
+ - Market players are fragmented or complacent
+@@ -78,7 +78,7 @@
+ - Pricing sensitivity in the segment
+ 
+ ### Step 4: Evaluate Winnability
+-Assess realistic market share potential:
++Assess whether you can win this segment:
+ - Total addressable market (TAM) size
+ - Competitive landscape and positioning
+ - Your differentiation or unfair advantage
+@@ -112,14 +112,17 @@
+ - Timeline and resource constraints
+ - Current customer data or feedback
+ 
++## Evidence Labels
++Every claim about a segment (pain, budget, competition, size, access) carries its source, its date and one label: measured, user-provided, calculated, estimated or proxy. A score states which labelled evidence it rests on. Where evidence is missing, write `[NEED: …]` and score the criterion as unknown, not as a guess. Do not produce market-share or revenue projections.
++
+ ## Output
+ A beachhead segment analysis including:
+-- Top 3-5 recommended segments with scoring
++- Top 3-5 recommended segments with scoring, each score tied to labelled evidence
+ - Primary beachhead segment recommendation
+ - Pain point validation and evidence
+ - Willingness to pay assessment and pricing guidance
+-- Realistic market share and revenue projections
+ - Referral and expansion pathways to adjacent segments
++- Open `[NEED: …]` items: the evidence that would change the recommendation
+ - 90-day customer acquisition plan for beachhead
+ - Post-beachhead expansion roadmap
+ 
+@@ -133,7 +136,6 @@
+ - Select segment with fastest path to revenue and references
+ - Ensure beachhead can reference to adjacent market segments
+ - Focus all resources on dominating the beachhead (not diluting efforts)
+-- Plan exit from beachhead only after 60%+ market share
+ 
+ ---
+ 

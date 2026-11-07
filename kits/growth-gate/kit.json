@@ -1,0 +1,44 @@
+{
+  "kit_format": 1,
+  "name": "growth-gate",
+  "version": "1.0.0",
+  "description": "Deterministic pre-publish gate for drafts (unsourced numbers, overclaims, send wording, AI tells) plus a judgment checklist.",
+  "upstream": "https://github.com/coreyhaines31/marketingskills",
+  "sha": "e85f3cbc2e4a79bf33b2a12e9bdd9087d414735b",
+  "licence": "MIT",
+  "upstreams": [
+    {
+      "name": "marketingskills",
+      "url": "https://github.com/coreyhaines31/marketingskills",
+      "sha": "e85f3cbc2e4a79bf33b2a12e9bdd9087d414735b",
+      "licence": "MIT",
+      "path": "skills/copywriting/references/ai-tells.md"
+    },
+    {
+      "name": "kai-cmo-harness",
+      "url": "https://github.com/cgallic/kai-cmo-harness",
+      "sha": "5f2dab2453069277d133ae1b19df22f6e173152f",
+      "licence": "MIT",
+      "path": "scripts/quality_gates/"
+    }
+  ],
+  "licence_files": [
+    "LICENSE-marketingskills",
+    "LICENSE-kai-quality-gates"
+  ],
+  "notices": [
+    "NOTICE.md",
+    "PROVENANCE.md"
+  ],
+  "patches": [],
+  "bundle": "skills",
+  "skills": [
+    {
+      "name": "growth-gate",
+      "path": "skills/growth-gate",
+      "description": "Lint drafts before anything goes out: unsourced numbers, overclaims, send or publish wording without approval, AI tells, open [NEED] markers. Use for 'is this ready to post', 'check this copy', 'gate the drafts', 'before I publish', 'sanity-check this email'. Run from a session that did not write them; for a peer's verdict use holler-review-request."
+    }
+  ],
+  "agents": [],
+  "hooks": []
+}

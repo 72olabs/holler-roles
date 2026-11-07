@@ -1,0 +1,6 @@
+{
+  "name": "starter-team",
+  "version": "0.2.0",
+  "description": "Holler's default agents: eng, product, reviewer and designer.",
+  "agents": ["eng", "product", "reviewer", "designer"]
+}

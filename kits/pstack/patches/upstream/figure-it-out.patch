@@ -1,0 +1,27 @@
+--- a/plugins/pstack/skills/figure-it-out/SKILL.md
++++ b/skills/figure-it-out/SKILL.md
+@@ -1,8 +1,23 @@
+ ---
+ name: figure-it-out
+-description: "Design an auditable playbook when no narrower one fits: a large migration, an ambitious multi-part change, or work a human reviews after stepping away. Scales rigor to the task, runs a hypothesis loop, and logs decisions. Use for /figure-it-out or 'figure it out'."
++description: "Design a step-by-step plan for a large or unclear task that no other playbook fits. Use for \"figure it out\", \"not sure where to start\", a migration across many files, a multi-part change, or work the user will review later. One run, one task; it is not Orchestrate or Autopilot."
+ ---
+ 
++<!-- holler-roles: converted from pstack skills/figure-it-out/SKILL.md at 356c6e0f978d (MIT, see ../../LICENSE). Frontmatter and this preamble are added; the text after the rule is unchanged. -->
++
++**Before you start**
++
++Paths in this preamble are relative to this skill's folder.
++
++1. Read the Principles section of the pstack principles index, `../poteto-mode/SKILL.md`. Before applying a principle, read its leaf skill at `../principle-<name>/SKILL.md`.
++2. Open a task list whose first items are this playbook's steps, copied verbatim. A step you skip stays on the list with `skip: <reason>`.
++3. Do not report done without runtime evidence: output from running the changed thing on the surface the task names. Tests or "it compiles" alone are not done.
++
++Reading the playbook: its relative links resolve from `./ (this skill's folder)`. "The installed plugin", `<plugin>` and "this pstack" mean the folder two levels up from this skill (`../..`), which holds `skills/` and `agents/`. The sections it cites (Non-negotiables, Subagents, Models, Writing the reply) are in the principles index; Opening a PR is `../poteto-mode/playbooks/opening-a-pr.md`. A skill it names that is not in your skill list is a file at `../<name>/SKILL.md`: read it instead of invoking it. When you spawn `pstack:poteto-agent`, give it the absolute path of `../poteto-mode/SKILL.md`. On Codex, map Claude tool and model names with `../poteto-mode/references/codex-tools.md`.
++
++---
++
++
+ # Figure it out
+ 
+ When the task matches no playbook, design one. The deliverable before any code is the workflow itself: a sequence of phases that scales rigor to the task, runs the scientific method, and leaves a decision trail a human can audit after stepping away.

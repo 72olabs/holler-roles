@@ -1,0 +1,23 @@
+{"name": "write registry via project link", "expect": "deny", "input": {"tool_name": "Write", "cwd": "{proj}", "tool_input": {"file_path": ".agents/experiments.jsonl", "content": "{}\n"}}}
+{"name": "edit registry at the context target", "expect": "deny", "input": {"tool_name": "Edit", "cwd": "{proj}", "tool_input": {"file_path": "{ctx}/experiments.jsonl", "old_string": "15", "new_string": "11"}}}
+{"name": "multiedit through an alias symlink", "expect": "deny", "input": {"tool_name": "MultiEdit", "cwd": "{proj}", "tool_input": {"file_path": "{proj}/notes/exp-alias.jsonl", "edits": []}}}
+{"name": "write a draft card file is fine", "expect": "allow", "input": {"tool_name": "Write", "cwd": "{proj}", "tool_input": {"file_path": "drafts/cards/hero.json", "content": "{}"}}}
+{"name": "edit other jsonl is fine", "expect": "allow", "input": {"tool_name": "Edit", "cwd": "{proj}", "tool_input": {"file_path": "data/events.jsonl", "old_string": "a", "new_string": "b"}}}
+{"name": "append redirection", "expect": "deny", "input": {"tool_name": "Bash", "cwd": "{proj}", "tool_input": {"command": "cat card.json >> .agents/experiments.jsonl"}}}
+{"name": "truncate redirection", "expect": "deny", "input": {"tool_name": "Bash", "cwd": "{proj}", "tool_input": {"command": "> .agents/experiments.jsonl"}}}
+{"name": "fd redirection", "expect": "deny", "input": {"tool_name": "Bash", "cwd": "{proj}", "tool_input": {"command": "echo '{}' 1>>.agents/experiments.jsonl"}}}
+{"name": "tee append", "expect": "deny", "input": {"tool_name": "Bash", "cwd": "{proj}", "tool_input": {"command": "echo '{}' | tee -a .agents/experiments.jsonl"}}}
+{"name": "sed in place", "expect": "deny", "input": {"tool_name": "Bash", "cwd": "{proj}", "tool_input": {"command": "sed -i '' 's/15/11/' .agents/experiments.jsonl"}}}
+{"name": "python one-liner open", "expect": "deny", "input": {"tool_name": "Bash", "cwd": "{proj}", "tool_input": {"command": "python3 -c \"open('.agents/experiments.jsonl','a').write('x')\""}}}
+{"name": "mv away", "expect": "deny", "input": {"tool_name": "Bash", "cwd": "{proj}", "tool_input": {"command": "mv .agents/experiments.jsonl /tmp/old.jsonl"}}}
+{"name": "git checkout restores old copy", "expect": "deny", "input": {"tool_name": "Bash", "cwd": "{proj}", "tool_input": {"command": "git checkout HEAD~1 -- context/experiments.jsonl"}}}
+{"name": "read with cat and jq", "expect": "allow", "input": {"tool_name": "Bash", "cwd": "{proj}", "tool_input": {"command": "cat .agents/experiments.jsonl | jq -c 'select(.type==\"card\")'"}}}
+{"name": "count lines", "expect": "allow", "input": {"tool_name": "Bash", "cwd": "{proj}", "tool_input": {"command": "wc -l .agents/experiments.jsonl"}}}
+{"name": "grep into another file", "expect": "allow", "input": {"tool_name": "Bash", "cwd": "{proj}", "tool_input": {"command": "grep exp-2026 .agents/experiments.jsonl > drafts/open-cards.txt"}}}
+{"name": "git log on registry", "expect": "allow", "input": {"tool_name": "Bash", "cwd": "{proj}", "tool_input": {"command": "git log --oneline -- context/experiments.jsonl"}}}
+{"name": "sanctioned add, default registry", "expect": "allow", "input": {"tool_name": "Bash", "cwd": "{proj}", "tool_input": {"command": "python3 -I /x/skills/experiment-card/scripts/experiments.py add --card drafts/cards/hero.json --approved-by Alex"}}}
+{"name": "sanctioned add, explicit registry", "expect": "allow", "input": {"tool_name": "Bash", "cwd": "{proj}", "tool_input": {"command": "python3 -I /x/skills/experiment-card/scripts/experiments.py add --card - --approved-by Alex --registry .agents/experiments.jsonl < drafts/cards/hero.json"}}}
+{"name": "sanctioned add with output redirected elsewhere", "expect": "allow", "input": {"tool_name": "Bash", "cwd": "{proj}", "tool_input": {"command": "python3 -I /x/scripts/experiments.py readout --card exp-2026-10-23-a --actual 3 --source ga --date 2026-10-23 --label measured --sample 9 --registry .agents/experiments.jsonl > drafts/readout.txt"}}}
+{"name": "sanctioned add redirected into registry", "expect": "deny", "input": {"tool_name": "Bash", "cwd": "{proj}", "tool_input": {"command": "python3 -I /x/scripts/experiments.py template > .agents/experiments.jsonl"}}}
+{"name": "unrelated bash", "expect": "allow", "input": {"tool_name": "Bash", "cwd": "{proj}", "tool_input": {"command": "ls -la && echo hi > out.txt"}}}
+{"name": "unrelated tool", "expect": "allow", "input": {"tool_name": "Read", "cwd": "{proj}", "tool_input": {"file_path": ".agents/experiments.jsonl"}}}

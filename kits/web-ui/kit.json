@@ -1,0 +1,44 @@
+{
+  "kit_format": 1,
+  "name": "web-ui",
+  "version": "1.0.0",
+  "description": "Web UI skills from Anthropic's Apache-2.0 skills repository: frontend-design (persona-free copy) and webapp-testing.",
+  "upstream": "https://github.com/anthropics/skills",
+  "sha": "dbd4588f9e1033efb41dad4bef2f7947c8993d44",
+  "licence": "Apache-2.0",
+  "upstreams": [
+    {
+      "name": "anthropics/skills",
+      "url": "https://github.com/anthropics/skills",
+      "sha": "dbd4588f9e1033efb41dad4bef2f7947c8993d44",
+      "licence": "Apache-2.0",
+      "path": "skills/frontend-design"
+    }
+  ],
+  "licence_files": [
+    "skills/frontend-design/LICENSE.txt",
+    "skills/webapp-testing/LICENSE.txt"
+  ],
+  "notices": [
+    "NOTICE.md",
+    "PROVENANCE.md"
+  ],
+  "patches": [
+    "patches/upstream/frontend-design.patch"
+  ],
+  "bundle": "skills",
+  "skills": [
+    {
+      "name": "frontend-design",
+      "path": "skills/frontend-design",
+      "description": "Guidance for distinctive, intentional visual design when building new UI or reshaping an existing one. Helps with aesthetic direction, typography, and making choices that don't read as templated defaults."
+    },
+    {
+      "name": "webapp-testing",
+      "path": "skills/webapp-testing",
+      "description": "Toolkit for interacting with and testing local web applications using Playwright. Supports verifying frontend functionality, debugging UI behavior, capturing browser screenshots, and viewing browser logs."
+    }
+  ],
+  "agents": [],
+  "hooks": []
+}

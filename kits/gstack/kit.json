@@ -1,0 +1,74 @@
+{
+  "kit_format": 1,
+  "name": "gstack",
+  "version": "1.0.0",
+  "description": "Adapted gstack material: office hours, DESIGN.md consultation, divergent design variants, and the careful destructive-command guard.",
+  "upstream": "https://github.com/garrytan/gstack",
+  "sha": "b04cc35832183a89ed71eed628de15a6f315a1a8",
+  "licence": "MIT",
+  "upstreams": [
+    {
+      "name": "gstack",
+      "url": "https://github.com/garrytan/gstack",
+      "sha": "b04cc35832183a89ed71eed628de15a6f315a1a8",
+      "licence": "MIT",
+      "path": "careful"
+    },
+    {
+      "name": "impeccable (via gstack)",
+      "url": "https://github.com/pbakaus/impeccable",
+      "sha": "see gstack NOTICE.md at b04cc35",
+      "licence": "Apache-2.0",
+      "path": "design-consultation parts"
+    }
+  ],
+  "licence_files": [
+    "LICENSE",
+    "LICENSE-Apache-2.0.txt"
+  ],
+  "notices": [
+    "NOTICE.md",
+    "PROVENANCE.md"
+  ],
+  "patches": [
+    "patches/upstream/careful.patch",
+    "patches/upstream/office-hours.patch"
+  ],
+  "bundle": "skills",
+  "skills": [
+    {
+      "name": "office-hours",
+      "path": "skills/office-hours",
+      "description": "Use when asked to brainstorm, evaluate whether an idea is worth building, run office hours, or think through a new product idea or design direction before any code is written."
+    },
+    {
+      "name": "design-system-doc",
+      "path": "skills/design-system-doc",
+      "description": "Create or update DESIGN.md, the project's design-system file: product context, the one thing to remember, a token system (color, type, spacing, radius, motion) with a reason per choice, and a Decisions Log. Use for 'write a DESIGN.md', 'set up the design system', 'update DESIGN.md', 'record this decision', or when a picked direction should become the system."
+    },
+    {
+      "name": "design-variants",
+      "path": "skills/design-variants",
+      "description": "Explore several genuinely different directions for one screen, flow, state or asset before anything is built. Use for 'give me N directions', 'show me options', 'explore', 'mock up a few takes', 'what could X look like', 'show me alternatives'. Writes text concepts first and waits for confirmation before rendering HTML or image variants."
+    }
+  ],
+  "agents": [],
+  "hooks": [
+    {
+      "name": "careful",
+      "path": "hooks/careful",
+      "harnesses": [
+        "claude"
+      ],
+      "event": "PreToolUse",
+      "matcher": "Bash",
+      "command": [
+        "/bin/bash",
+        "check-careful.sh"
+      ],
+      "timeout": 10,
+      "tests": "tests/run_cases.py",
+      "description": "Asks before destructive shell commands (recursive rm, DROP/TRUNCATE, force-push, git reset --hard, kubectl delete, ...) and denies rm -rf of / or ~ and force-push to the default branch. Best-effort string matching, not a security boundary."
+    }
+  ]
+}

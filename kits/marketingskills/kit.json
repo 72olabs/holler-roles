@@ -1,0 +1,56 @@
+{
+  "kit_format": 1,
+  "name": "marketingskills",
+  "version": "1.0.0",
+  "description": "Product marketing skills from marketingskills: the product marketing context file, customer research, launches and pricing.",
+  "upstream": "https://github.com/coreyhaines31/marketingskills",
+  "sha": "e85f3cbc2e4a79bf33b2a12e9bdd9087d414735b",
+  "licence": "MIT",
+  "upstreams": [
+    {
+      "name": "marketingskills",
+      "url": "https://github.com/coreyhaines31/marketingskills",
+      "sha": "e85f3cbc2e4a79bf33b2a12e9bdd9087d414735b",
+      "licence": "MIT",
+      "path": "skills/launch"
+    }
+  ],
+  "licence_files": [
+    "LICENSE"
+  ],
+  "notices": [
+    "NOTICE.md",
+    "PROVENANCE.md"
+  ],
+  "patches": [
+    "patches/upstream/customer-research.patch",
+    "patches/upstream/launch.patch",
+    "patches/upstream/pricing.patch",
+    "patches/upstream/product-marketing.patch"
+  ],
+  "bundle": "skills",
+  "skills": [
+    {
+      "name": "product-marketing",
+      "path": "skills/product-marketing",
+      "description": "Update the shared product marketing context, .agents/product-marketing.md: positioning, ICP, competitors, customer language, brand voice, proof points, learnings. Use for 'update our positioning', 'set up marketing context', 'who is our ICP', 'log this learning'. Saves only on approval."
+    },
+    {
+      "name": "customer-research",
+      "path": "skills/customer-research",
+      "description": "Analyze customer research you already have: call or interview transcripts, survey results, support tickets, reviews, churn notes, community threads. Use for 'analyze these transcripts', 'what are customers saying', 'mine these reviews', 'survey results', 'why do customers churn'. Not for planning interviews or writing personas."
+    },
+    {
+      "name": "launch",
+      "path": "skills/launch",
+      "description": "Plan a product launch, feature announcement or release go-to-market. Use for 'launch', 'Product Hunt', 'feature release', 'announcement', 'beta launch', 'early access', 'waitlist', 'how do I launch this', 'go live', 'pre-launch QA', 'launch checklist', 'GTM plan', 'we're about to ship'."
+    },
+    {
+      "name": "pricing",
+      "path": "skills/pricing",
+      "description": "Pricing decisions, packaging and monetization options, and pricing-page audits. Use for 'pricing', 'pricing tiers', 'freemium', 'free trial', 'value metric', 'willingness to pay', 'Van Westendorp', 'how much should I charge', 'annual vs monthly', 'per seat pricing', 'should I offer a free plan', 'pricing page teardown'."
+    }
+  ],
+  "agents": [],
+  "hooks": []
+}

@@ -1,0 +1,46 @@
+{
+  "kits": {
+    "design-review-rules": {
+      "content_hash": "sha256:aa989899db7756288b8ebe9dc39133e801b75e9e81e28b96c8e92bd74254656c",
+      "licence": "MIT AND Apache-2.0",
+      "version": "1.0.0"
+    },
+    "growth-gate": {
+      "content_hash": "sha256:b0d709d7ff3f207716e801458a292ecc65a52742481e2fc6160bb4efdb4838d8",
+      "licence": "MIT",
+      "version": "1.0.0"
+    },
+    "gstack": {
+      "content_hash": "sha256:620381e662c087185c592896ecfcaeba63f6dd68d0333195089eabecd4faae27",
+      "licence": "MIT",
+      "version": "1.0.0"
+    },
+    "marketingskills": {
+      "content_hash": "sha256:c3de074df0ffc55b4dd66c2fe5504c6393405a7583df6b9f37f3192e59fcbcfa",
+      "licence": "MIT",
+      "version": "1.0.0"
+    },
+    "opendesign-craft": {
+      "content_hash": "sha256:972c60f7cce301cf44a4788842494537b05c8e9e8f6fdc3ad1717f15817d33e3",
+      "licence": "Apache-2.0",
+      "version": "1.0.0"
+    },
+    "pm-skills": {
+      "content_hash": "sha256:0b8a614b996911d58af7afdc6df7488c17905ad5d8e5b9c6cba93c16a04afd39",
+      "licence": "MIT",
+      "version": "1.0.0"
+    },
+    "pstack": {
+      "content_hash": "sha256:97064c61996019cca0e3d8253e4fef16eaf6652b82a5aff80b52d8df3aad363e",
+      "licence": "MIT",
+      "version": "1.0.0"
+    },
+    "web-ui": {
+      "content_hash": "sha256:4f892a8c05155d6d21008ebba4671b51506a43908a1cb2645551566ae98ab19c",
+      "licence": "Apache-2.0",
+      "version": "1.0.0"
+    }
+  },
+  "lock_format": 2,
+  "sources": {}
+}

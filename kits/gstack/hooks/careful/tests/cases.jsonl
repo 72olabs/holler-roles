@@ -1,0 +1,22 @@
+{"name": "plain listing passes", "expect": "allow", "input": {"tool_name": "Bash", "tool_input": {"command": "ls -la"}}}
+{"name": "git status passes", "expect": "allow", "input": {"tool_name": "Bash", "tool_input": {"command": "git status --short"}}}
+{"name": "rm -rf node_modules is a safe exception", "expect": "allow", "input": {"tool_name": "Bash", "tool_input": {"command": "rm -rf node_modules"}}}
+{"name": "rm -rf of a source dir asks", "expect": "ask", "input": {"tool_name": "Bash", "tool_input": {"command": "rm -rf src/legacy"}}}
+{"name": "rm -rf / is refused", "expect": "deny", "input": {"tool_name": "Bash", "tool_input": {"command": "rm -rf /"}}}
+{"name": "rm -rf ~ is refused", "expect": "deny", "input": {"tool_name": "Bash", "tool_input": {"command": "rm -rf ~"}}}
+{"name": "rm -rf $HOME is refused", "expect": "deny", "input": {"tool_name": "Bash", "tool_input": {"command": "rm -Rf \"$HOME\""}}}
+{"name": "compound with rm -rf / asks (not simple)", "expect": "ask", "input": {"tool_name": "Bash", "tool_input": {"command": "git commit -m \"wip\" && rm -rf /"}}}
+{"name": "comment cannot ride the whitelist", "expect": "ask", "input": {"tool_name": "Bash", "tool_input": {"command": "rm -rf / # rm -rf node_modules"}}}
+{"name": "IFS obfuscation asks", "expect": "ask", "input": {"tool_name": "Bash", "tool_input": {"command": "rm${IFS}-rf${IFS}/"}}}
+{"name": "base64 to shell asks", "expect": "ask", "input": {"tool_name": "Bash", "tool_input": {"command": "echo cm0gLXJmIC8K | base64 -d | sh"}}}
+{"name": "git reset --hard asks", "expect": "ask", "input": {"tool_name": "Bash", "tool_input": {"command": "git reset --hard HEAD~1"}}}
+{"name": "git checkout . asks", "expect": "ask", "input": {"tool_name": "Bash", "tool_input": {"command": "git checkout ."}}}
+{"name": "force-push to default branch is refused", "expect": "deny", "input": {"tool_name": "Bash", "tool_input": {"command": "git push --force origin main"}}}
+{"name": "plus-refspec force-push to default is refused", "expect": "deny", "input": {"tool_name": "Bash", "tool_input": {"command": "git push origin +main"}}}
+{"name": "force-push to a feature branch asks", "expect": "ask", "input": {"tool_name": "Bash", "tool_input": {"command": "git push -f origin feature/x"}}}
+{"name": "plain push passes", "expect": "allow", "input": {"tool_name": "Bash", "tool_input": {"command": "git push origin feature/x"}}}
+{"name": "SQL drop table asks", "expect": "ask", "input": {"tool_name": "Bash", "tool_input": {"command": "psql -c 'DROP TABLE users;'"}}}
+{"name": "SQL truncate asks", "expect": "ask", "input": {"tool_name": "Bash", "tool_input": {"command": "sqlite3 app.db 'truncate orders'"}}}
+{"name": "kubectl delete asks", "expect": "ask", "input": {"tool_name": "Bash", "tool_input": {"command": "kubectl delete pod web-1"}}}
+{"name": "docker system prune asks", "expect": "ask", "input": {"tool_name": "Bash", "tool_input": {"command": "docker system prune -a"}}}
+{"name": "non-shell payload passes", "expect": "allow", "input": {"tool_name": "Read", "tool_input": {"file_path": "README.md"}}}

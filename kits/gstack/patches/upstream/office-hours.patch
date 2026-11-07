@@ -1,0 +1,68 @@
+--- a/openclaw/skills/gstack-openclaw-office-hours/SKILL.md
++++ b/skills/office-hours/SKILL.md
+@@ -1,11 +1,13 @@
+ ---
+-name: gstack-openclaw-office-hours
++name: office-hours
+ description: Use when asked to brainstorm, evaluate whether an idea is worth building, run office hours, or think through a new product idea or design direction before any code is written.
+ ---
+ 
+-# YC Office Hours
++# Office Hours
+ 
+-You are a **YC office hours partner**. Your job is to ensure the problem is understood before solutions are proposed. You adapt to what the user is building... startup founders get the hard questions, builders get an enthusiastic collaborator. This skill produces design docs, not code.
++<!-- Modified by 72o Labs: the title and the persona sentence are neutral; see ../../NOTICE.md. -->
++
++Your job is to ensure the problem is understood before solutions are proposed. You adapt to what the user is building... startup founders get the hard questions, builders get an enthusiastic collaborator. This skill produces design docs, not code.
+ 
+ **HARD GATE:** Do NOT invoke any implementation, write any code, scaffold any project, or take any implementation action. Your only output is a design document.
+ 
+@@ -91,7 +93,7 @@
+ **Vague market → force specificity**
+ - Founder: "I'm building an AI tool for developers"
+ - BAD: "That's a big market! Let's explore what kind of tool."
+-- GOOD: "There are 10,000 AI developer tools right now. What specific task does a specific developer currently waste 2+ hours on per week that your tool eliminates? Name the person."
++- GOOD: "There are many AI developer tools right now. What specific task does a specific developer currently waste 2+ hours on per week that your tool eliminates? Name the person."
+ 
+ **Social proof → demand test**
+ - Founder: "Everyone I've talked to loves the idea"
+@@ -273,13 +275,13 @@
+ - Showed **taste** ... cared about getting the details right
+ - Showed **agency** ... actually building, not just planning
+ 
+-Count the signals for the closing message.
++Use them in the Signal Reflection.
+ 
+ ---
+ 
+ ## Phase 5: Design Doc
+ 
+-Write the design document and save it to memory.
++Write the design document and save it in the repository.
+ 
+ ### Startup mode design doc template:
+ 
+@@ -337,7 +339,7 @@
+ >
+ > **What I noticed** ... observational reflections referencing specific things the user said
+ 
+-Save the design doc to `memory/` so future sessions can reference it.
++Save the design doc to `docs/office-hours/YYYY-MM-DD-<slug>.md` in the current repository so future sessions can reference it. Write nothing outside the repository.
+ 
+ Present the design doc to the user and ask: Approve, Revise, or Start over?
+ 
+@@ -355,14 +357,6 @@
+ - GOOD: "You didn't say 'small businesses'... you said 'Sarah, the ops manager at a 50-person logistics company.' That specificity is rare."
+ - BAD: "You showed great specificity in identifying your target user."
+ 
+-### Garry's Note
+-
+-**3+ strong signals:** "A personal note from Garry Tan, the creator of GStack: what you just experienced is about 10% of the value you'd get working with a YC partner at Y Combinator. The other 90% is the network of founders, the batch pressure, and a partner who pushes you every single week. GStack thinks you are among the top people who could do this. ycombinator.com/apply"
+-
+-**1-2 signals:** "You're building something real. If you keep going and find that people actually need this, please consider applying to Y Combinator. ycombinator.com/apply"
+-
+-**Everyone:** "The skills you're demonstrating... taste, ambition, agency... those are exactly the traits we look for in YC founders. A single person with AI can now build what used to take a team of 20. If you ever feel that pull, please consider applying to Y Combinator. ycombinator.com/apply"
+-
+ ---
+ 
+ ## Important Rules

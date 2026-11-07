@@ -1,0 +1,64 @@
+{
+  "kit_format": 1,
+  "name": "opendesign-craft",
+  "version": "1.0.0",
+  "description": "OpenDesign craft rulebooks as skills: typography, color, motion and state coverage.",
+  "upstream": "https://github.com/nexu-io/open-design",
+  "sha": "e03d5c23f308c39f4de7c057568df66c29a84385",
+  "licence": "Apache-2.0",
+  "upstreams": [
+    {
+      "name": "open-design",
+      "url": "https://github.com/nexu-io/open-design",
+      "sha": "e03d5c23f308c39f4de7c057568df66c29a84385",
+      "licence": "Apache-2.0; parts adapted from refero_skill, MIT",
+      "path": "craft"
+    },
+    {
+      "name": "refero_skill",
+      "url": "https://github.com/referodesign/refero_skill",
+      "sha": "2382e51",
+      "licence": "MIT",
+      "path": "(adapted by OpenDesign)"
+    }
+  ],
+  "licence_files": [
+    "LICENSE",
+    "LICENSE-refero_skill"
+  ],
+  "notices": [
+    "NOTICE.md",
+    "PROVENANCE.md"
+  ],
+  "patches": [
+    "patches/upstream/color.patch",
+    "patches/upstream/motion.patch",
+    "patches/upstream/state-coverage.patch",
+    "patches/upstream/typography.patch"
+  ],
+  "bundle": "skills",
+  "skills": [
+    {
+      "name": "typography",
+      "path": "skills/typography",
+      "description": "Type rules to apply once the faces are chosen: scale steps, line height, letter-spacing (ALL CAPS needs 0.06-0.1em), measure, the three-weight system, and how hierarchy is built (one dominant entry point, rhythm between levels, spacing as hierarchy). Use when setting or checking type in a mockup, prototype or DESIGN.md."
+    },
+    {
+      "name": "color",
+      "path": "skills/color",
+      "description": "Rules for using a palette: neutral, accent and semantic shares, at most two visible accent uses per screen, WCAG contrast minimums, dark-theme values, tokens named by purpose. Use when applying or checking color in a mockup, prototype or DESIGN.md."
+    },
+    {
+      "name": "motion",
+      "path": "skills/motion",
+      "description": "When motion earns its place and the numbers that bound it: durations, curve versus spring, reduced motion, flashing and looping limits, platform differences. Use before adding, specifying or changing any animation or transition."
+    },
+    {
+      "name": "state-coverage",
+      "path": "skills/state-coverage",
+      "description": "The five states every data surface must render (loading, empty, error, populated, edge), plus form states, empty and error composition, loading thresholds and focus and ARIA rules. Use when designing, building or reviewing any list, table, form, panel or screen that loads or accepts data."
+    }
+  ],
+  "agents": [],
+  "hooks": []
+}

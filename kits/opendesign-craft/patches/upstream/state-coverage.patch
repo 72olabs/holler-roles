@@ -1,0 +1,17 @@
+--- a/craft/state-coverage.md
++++ b/skills/state-coverage/SKILL.md
+@@ -1,3 +1,14 @@
++---
++name: state-coverage
++description: "The five states every data surface must render (loading, empty, error, populated, edge), plus form states, empty and error composition, loading thresholds and focus and ARIA rules. Use when designing, building or reviewing any list, table, form, panel or screen that loads or accepts data."
++---
++
++<!-- holler-roles: vendored from https://github.com/nexu-io/open-design craft/state-coverage.md at e03d5c2 (Apache-2.0; parts adapted there from refero_skill, MIT). Frontmatter and this note are added; the text after the rule is unchanged. See ../../NOTICE.md. -->
++
++Reading note: this rulebook was written for OpenDesign. Its token names (`--accent`, `--fg`, ...) mean the matching tokens in this project's DESIGN.md. Mentions of OpenDesign's daemon, `lint-artifact`, `.ph-img` or `data-od-id` do not apply here.
++
++---
++
+ # State coverage craft rules
+ 
+ Universal rules for what every interactive surface must render. The active

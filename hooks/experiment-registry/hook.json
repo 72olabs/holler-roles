@@ -1,0 +1,10 @@
+{
+  "name": "experiment-registry",
+  "harnesses": ["claude"],
+  "event": "PreToolUse",
+  "matcher": "Write|Edit|MultiEdit|NotebookEdit|Bash",
+  "command": ["python3", "-I", "guard.py"],
+  "timeout": 10,
+  "tests": "tests/run_cases.py",
+  "description": "Denies direct edits to .agents/experiments.jsonl; only the experiment-card script appends to it."
+}

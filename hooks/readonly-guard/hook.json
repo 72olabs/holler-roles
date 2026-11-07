@@ -1,0 +1,10 @@
+{
+  "name": "readonly-guard",
+  "harnesses": ["claude"],
+  "event": "PreToolUse",
+  "matcher": "Edit|Write|MultiEdit|NotebookEdit|Bash",
+  "command": ["python3", "-I", "guard.py"],
+  "timeout": 10,
+  "tests": "tests/run_cases.py",
+  "description": "Keeps the session read-only: denies file-writing tools and any shell command outside a read-only allowlist (reads and read-only git)."
+}

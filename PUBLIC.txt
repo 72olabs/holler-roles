@@ -1,0 +1,23 @@
+# What `holler-roles export` copies into the public repository. One tracked path or folder per line; `!path`
+# excludes a path inside a listed folder. Anything not listed stays private: a new top-level file or folder is
+# private until it is listed here. Don't name private files in this file: it is exported too.
+
+LICENSE
+NOTICE
+README.md
+CONTRIBUTING.md
+SECURITY.md
+PUBLIC.txt
+.gitignore
+.github
+bin
+hooks
+kits
+layers
+profiles
+skills
+spec
+tests
+tools
+kits.lock
+team.json

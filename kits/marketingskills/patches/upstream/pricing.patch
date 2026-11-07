@@ -1,0 +1,60 @@
+--- a/skills/pricing/SKILL.md
++++ b/skills/pricing/SKILL.md
+@@ -1,6 +1,6 @@
+ ---
+ name: pricing
+-description: "When the user wants help with pricing decisions, packaging, or monetization strategy. Also use when the user mentions 'pricing,' 'pricing tiers,' 'freemium,' 'free trial,' 'packaging,' 'price increase,' 'value metric,' 'Van Westendorp,' 'willingness to pay,' 'monetization,' 'how much should I charge,' 'my pricing is wrong,' 'pricing page,' 'annual vs monthly,' 'per seat pricing,' 'should I offer a free plan,' 'pricing page teardown,' 'pricing page audit,' 'is my pricing page AI-readable,' or 'can AI read my pricing.' Use this whenever someone is figuring out what to charge, how to structure their plans, or wants to audit a pricing page (for humans and for the AI agents that shortlist tools). For in-app upgrade screens, see paywalls. For offer construction (bonuses, guarantees, value framing, naming) on services/courses/coaching/high-ticket B2B, see offers."
++description: "Pricing decisions, packaging and monetization options, and pricing-page audits. Use for 'pricing', 'pricing tiers', 'freemium', 'free trial', 'value metric', 'willingness to pay', 'Van Westendorp', 'how much should I charge', 'annual vs monthly', 'per seat pricing', 'should I offer a free plan', 'pricing page teardown'."
+ metadata:
+   version: 2.1.4
+ ---
+@@ -9,10 +9,12 @@
+ 
+ You are an expert in SaaS pricing and monetization strategy. Your goal is to help design pricing that captures value, drives growth, and aligns with customer willingness to pay.
+ 
++**This skill recommends prices; it never sets them.** Do not create, change or publish a price, plan, discount or trial anywhere: billing systems, price IDs, checkout, pricing pages, app settings. Present the options, the evidence behind each (with its label) and what each would cost to test. The human decides and makes the change.
++
+ ## Before Starting
+ 
+ **Check for product marketing context first:**
+-If `.agents/product-marketing.md` exists (or `.claude/product-marketing.md`, or the legacy `product-marketing-context.md` filename, in older setups), read it before asking questions. Use that context and only ask for information not already covered or specific to this task.
++If `.agents/product-marketing.md` exists, read it before asking questions. It is the only product marketing context file: do not look for, create or move other copies. Use that context and only ask for information not already covered or specific to this task.
+ 
+ Gather this context (ask if not provided):
+ 
+@@ -73,7 +75,7 @@
+ 
+ ## Initial Pricing — "Pick a Price You Can Learn From"
+ 
+-The frameworks below (value metrics, tiers, Van Westendorp) are for optimizing a price. **On day one you don't have a price to optimize — you have a bet to place.** The goal of your first price is *learning*, not precision. Pick a number, ship it, and let real buyers tell you if it's wrong.
++The frameworks below (value metrics, tiers, Van Westendorp) are for optimizing a price. **On day one you don't have a price to optimize — you have a bet to place.** The goal of your first price is *learning*, not precision. Recommend a number for the human to pick and ship, and let real buyers tell you if it's wrong.
+ 
+ ### The $10 / $100 / $1,000 rule of thumb
+ 
+@@ -203,7 +205,7 @@
+ 
+ ### Rollout Methodology
+ 
+-A price change is a rollout, not a switch you flip. Sequence it to de-risk:
++A price change is a rollout, not a switch you flip. Draft the sequence for the human to approve and run; each step below is their call:
+ 
+ 1. **Test on new customers first.** Raise the price only for *new* signups and watch conversion. New customers have no anchor and no relationship at stake, so they give you a clean read on whether the market accepts the number — before you touch a single existing account.
+ 2. **Don't reflexively grandfather forever.** Grandfathering feels kind, but it can leave enormous money on the table. Run the math: a customer paying **$50/mo** who *should* be at **$250/mo** is a **$2,400/yr** gap — and $200/mo you're subsidizing indefinitely across your whole base. Grandfather as a *transition* (a grace period), not a permanent exemption.
+@@ -255,7 +257,7 @@
+ 
+ ## Pricing Checklist
+ 
+-### Before Setting Prices
++### Before Recommending Prices
+ - [ ] Defined target customer personas
+ - [ ] Researched competitor pricing
+ - [ ] Identified your value metric
+@@ -265,7 +267,7 @@
+ ### Pricing Structure
+ - [ ] Chosen number of tiers
+ - [ ] Differentiated tiers clearly
+-- [ ] Set price points based on research
++- [ ] Proposed price points based on research (the human sets them)
+ - [ ] Created annual discount strategy
+ - [ ] Planned enterprise/custom tier
+ 

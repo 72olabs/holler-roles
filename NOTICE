@@ -1,0 +1,11 @@
+Holler Roles
+Copyright 2026 72o Labs
+
+Everything outside kits/ is licensed under Apache-2.0: the agent profiles, layers, the holler-* coordination
+skills, the original skills and hooks, the specs and the build tools.
+
+Third-party skills live under kits/<kit>/. Each kit is the work of its upstream authors, keeps its own licence
+(MIT or Apache-2.0 today), and carries its licence files, NOTICE.md (attribution and every change we made) and
+PROVENANCE.md; our changes to a kit are under that kit's licence. A built bundle carries them all.
+
+This licence does not cover the separately distributed Holler core.

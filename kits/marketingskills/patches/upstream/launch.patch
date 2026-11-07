@@ -1,0 +1,43 @@
+--- a/skills/launch/SKILL.md
++++ b/skills/launch/SKILL.md
+@@ -1,6 +1,6 @@
+ ---
+ name: launch
+-description: "When the user wants to plan a product launch, feature announcement, or release strategy. Also use when the user mentions 'launch,' 'Product Hunt,' 'feature release,' 'announcement,' 'go-to-market,' 'beta launch,' 'early access,' 'waitlist,' 'product update,' 'how do I launch this,' 'site launch,' 'go live,' 'pre-launch QA,' 'launch checklist,' 'GTM plan,' 'we're about to ship,' 'changelog,' 'release notes,' or 'what did we ship this week.' Use this whenever someone is preparing to release something publicly. For ongoing marketing after launch, see marketing-ideas. For the offer being launched (bonuses, guarantees, scarcity, naming), see offers."
++description: "Plan a product launch, feature announcement or release go-to-market. Use for 'launch', 'Product Hunt', 'feature release', 'announcement', 'beta launch', 'early access', 'waitlist', 'how do I launch this', 'go live', 'pre-launch QA', 'launch checklist', 'GTM plan', 'we're about to ship'."
+ metadata:
+   version: 2.2.0
+ ---
+@@ -12,7 +12,7 @@
+ ## Before Starting
+ 
+ **Check for product marketing context first:**
+-If `.agents/product-marketing.md` exists (or `.claude/product-marketing.md`, or the legacy `product-marketing-context.md` filename, in older setups), read it before asking questions. Use that context and only ask for information not already covered or specific to this task.
++If `.agents/product-marketing.md` exists, read it before asking questions. It is the only product marketing context file: do not look for, create or move other copies. Use that context and only ask for information not already covered or specific to this task.
+ 
+ ---
+ 
+@@ -93,7 +93,7 @@
+ 1. List industry leaders your audience follows
+ 2. Pitch win-win collaborations
+ 3. Use tools like SparkToro or Listen Notes to find audience overlap
+-4. Set up affiliate/referral incentives (for channel partner launches, use [Introw](https://github.com/coreyhaines31/marketingskills/blob/main/tools/integrations/introw.md) to manage deal registration and commissions)
++4. Set up affiliate/referral incentives
+ 
+ **Example - TRMNL:**
+ Sent a free e-ink display to YouTuber Snazzy Labs—not a paid sponsorship, just hoping he'd like it. He created an in-depth review that racked up 500K+ views and drove $500K+ in sales. They also set up an affiliate program for ongoing promotion.
+--- a/skills/launch/references/site-launch-qa.md
++++ b/skills/launch/references/site-launch-qa.md
+@@ -34,11 +34,9 @@
+ - [ ] Open Graph images and titles render correctly when the URL is shared
+ 
+ **Rollback**
+-- [ ] You know how to roll back on this platform, and someone has done it once. Examples: Vercel and Netlify promote a previous deployment; Webflow restores a site backup; WordPress restores from a backup plugin or host snapshot; Ploy ◆ promotes a previous deploy from its Deploys screen (its CLI always publishes to production, with no staging target, so preview before publishing).
++- [ ] You know how to roll back on this platform, and someone has done it once. Examples: Vercel and Netlify promote a previous deployment; Webflow restores a site backup; WordPress restores from a backup plugin or host snapshot.
+ - [ ] DNS TTL lowered a day ahead if the switch involves DNS changes
+ 
+-◆ marks a [Verified Partner](https://github.com/coreyhaines31/marketingskills/blob/main/tools/REGISTRY.md#verified-partners) of this repository: disclosure, not endorsement.
+-
+ ## At the switch
+ 
+ - [ ] Deploy redirects at the same moment as the new site

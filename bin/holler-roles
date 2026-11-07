@@ -1,0 +1,5 @@
+#!/bin/sh
+# holler-roles: build, verify and launch Holler's default agents. See tools/holler_roles/cli.py.
+set -eu
+root=$(cd "$(dirname "$0")/.." && pwd -P)
+exec python3 -I -B "$root/tools/holler_roles/cli.py" "$@"
