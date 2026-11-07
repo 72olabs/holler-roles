@@ -127,6 +127,21 @@ def clean_env(launch, harness, home=None):
     return env
 
 
+def claude_mcp_env(bundle, agent):
+    """{"CLAUDE_CODE_MCP_ALLOWLIST_ENV": "1"} when the agent's role plugin declares a local (stdio) MCP server, else {}.
+    Claude otherwise hands its whole environment, HOLLER_* included, to stdio servers (spec/LAUNCH.md). Reads the
+    .mcp.json Claude itself loads; one that can't be read counts as local (fail closed)."""
+    path = os.path.join(bundle, agent, "claude", "plugins", agent, ".mcp.json")
+    if not os.path.isfile(path):
+        return {}
+    try:
+        servers = json.loads(read(path)).get("mcpServers") or {}
+        local = any(not isinstance(s, dict) or s.get("type") != "http" for s in servers.values())
+    except (ValueError, AttributeError):
+        local = True
+    return {"CLAUDE_CODE_MCP_ALLOWLIST_ENV": "1"} if local else {}
+
+
 def cmd_launch(argv):
     if len(argv) < 2 or argv[1] not in ("claude", "codex"):
         die("usage: holler-roles launch <agent> claude|codex [--home DIR] [--print] [-- prompt]")
@@ -145,8 +160,11 @@ def cmd_launch(argv):
         home = os.path.abspath(opts[opts.index("--home") + 1])
         argv_out = ["codex"] + spec["extra_args"] + extra
     env = clean_env(launch, harness, home)
+    # set after clean_env, which drops every inherited CLAUDE_CODE_* value
+    mcp_env = claude_mcp_env(b, agent) if harness == "claude" else {}
+    env.update(mcp_env)
     if "--print" in opts:
-        shown = dict(launch["env"], **({"CODEX_HOME": home} if home else {}))
+        shown = dict(launch["env"], **({"CODEX_HOME": home} if home else {}), **mcp_env)
         print("env -u CLAUDE_CODE_ENTRYPOINT " + " ".join(f"{k}={subprocess.list2cmdline([v])}" for k, v in shown.items()) + " "
               + " ".join(subprocess.list2cmdline([a]) for a in argv_out))
         return 0

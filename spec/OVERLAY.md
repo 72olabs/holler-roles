@@ -31,6 +31,8 @@ Every part is optional. Dotfiles and dot-folders (`.git`) are ignored, so the ov
   tells the model it refines the rules above and never changes a required message format, an approval rule or the
   brief marker. It counts toward the 9,800-character brief limit. Write preferences and house rules, not secrets:
   the brief is shipped to the model on every session start.
+- **MCP servers.** An overlay profile may declare `mcp` under the same rules (spec/AGENT-PROFILE.md): remote
+  HTTPS servers or pinned `npx`/`uvx` packages, environment variable names only.
 - **Agents.** With `team.json`, exactly its `agents`, in order. Without it, this repository's team plus every overlay
   profile not already in it. `holler.actor` must equal the agent's name.
 

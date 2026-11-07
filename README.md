@@ -57,6 +57,10 @@ To build a role from skills, list them in the profile: `<kit>/<skill>` from a ki
 `skills/` (yours or this repository's) and `holler/<skill>` for coordination. `bin/holler-roles list` shows each
 agent's listing size; keep it to about 16 listed skills and move the rest to `manual`.
 
+A profile can also bring MCP servers (`mcp`): remote HTTPS servers, or `npx`/`uvx` packages pinned to an exact
+version, with environment variables passed through by name. Their tools prompt like any other; see
+spec/AGENT-PROFILE.md.
+
 ## Skill kits
 
 `kits/` holds third-party skills, curated and adapted for these roles, each under its own upstream licence:

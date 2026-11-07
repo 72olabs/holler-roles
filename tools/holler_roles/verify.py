@@ -10,6 +10,7 @@ import tarfile
 import tempfile
 import tomllib
 
+import mcp_servers
 from build import build_all, bundle_name, dist_root
 from common import die, file_sha, load_team, read, split_frontmatter, tree_hash, walk
 from kits import load_kits
@@ -94,6 +95,8 @@ def check_agent(bundle, entry, bad):
                f"{agent}: codex config.toml parses and sets no model, effort or approval policy", bad)
     except tomllib.TOMLDecodeError as e:
         report(False, f"{agent}: codex config.toml does not parse: {e}", bad)
+        cfg = None
+    check_mcp(bundle, agent, plugins, cfg, bad)
     markers = re.findall(r"^Brief marker: .+$", read(os.path.join(home, "AGENTS.md")), re.M)
     report(len(markers) == 2, f"{agent}: AGENTS.md carries {markers}", bad)
     if shutil.which("claude"):
@@ -101,6 +104,45 @@ def check_agent(bundle, entry, bad):
             r = subprocess.run(["claude", "plugin", "validate", os.path.join(plugins, p)], capture_output=True, text=True, timeout=120)
             report(r.returncode == 0, f"{agent}: claude plugin validate {p}", bad)
     return launch
+
+
+def check_mcp(bundle, agent, plugins, cfg, bad):
+    """Bundled MCP servers: MANIFEST.json, the role plugin's .mcp.json and the Codex mcp_servers agree and pass the rules;
+    no other .mcp.json anywhere in the agent."""
+    out = os.path.join(bundle, agent)
+    want = json.loads(read(os.path.join(out, "MANIFEST.json"))).get("mcp", {})
+    problems = []
+    for name, spec in want.items():
+        p = mcp_servers.server_problem(name, spec)
+        if p:
+            problems.append(f"MANIFEST.json {name}: {p}")
+    if len(want) > mcp_servers.MAX_SERVERS:
+        problems.append(f"MANIFEST.json declares {len(want)} servers")
+    own = os.path.join("claude", "plugins", agent, ".mcp.json")
+    if os.path.isfile(os.path.join(out, own)):
+        text = read(os.path.join(out, own))
+        try:
+            got = mcp_servers.from_claude(json.loads(text))
+        except ValueError:
+            got = "not valid JSON"
+        if isinstance(got, str):
+            problems.append(f".mcp.json: {got}")
+        elif got != want or not want:
+            problems.append(".mcp.json differs from MANIFEST.json mcp")
+        elif text != mcp_servers.claude_json(want):
+            problems.append(".mcp.json is not in the build's deterministic form")
+    elif want:
+        problems.append(f"no {own} for the servers in MANIFEST.json")
+    if cfg is not None:
+        got = mcp_servers.from_codex(cfg.get("mcp_servers", {}))
+        if isinstance(got, str):
+            problems.append(f"codex config.toml: {got}")
+        elif got != want:
+            problems.append("codex config.toml mcp_servers differs from MANIFEST.json mcp")
+    problems += mcp_servers.stray_declarations(out, agent, walk)
+    report(not problems, f"{agent}: bundled MCP servers ({', '.join(sorted(want)) or 'none'}): remote https or pinned npx/uvx, env by name, the same in "
+           f"Claude, Codex and MANIFEST.json, only in the role plugin's .mcp.json (no other .mcp.json, no plugin.json "
+           f"mcpServers)" + (f": {problems[:3]}" if problems else ""), bad)
 
 
 def codex_listing(bundle, agent, launch, bad):

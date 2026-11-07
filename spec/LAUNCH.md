@@ -13,8 +13,8 @@ between `bin/holler-roles build` and the runtime. Anything outside it is `bundle
   LICENSE                         Apache-2.0 for the holler-roles parts; kits keep their own licences
   NOTICE.md                       every third-party kit in the bundle, with upstreams and licence locations
   <agent>/launch.json             one per agent: eng, product, reviewer, designer
-  <agent>/MANIFEST.json           the agent's own build record (kits used, sizes)
-  <agent>/claude/plugins/         one --plugin-dir: role plugin, holler-platform, one plugin per kit
+  <agent>/MANIFEST.json           the agent's own build record (kits used, sizes, bundled MCP servers)
+  <agent>/claude/plugins/         one --plugin-dir: role plugin (with .mcp.json if any), holler-platform, one plugin per kit
   <agent>/codex/home-template/    AGENTS.md, config.toml, skills/, HOME-SETUP.md
 ```
 
@@ -167,7 +167,9 @@ Rules for v0.1:
    `auth.json`. Nothing under `~/.codex` is modified.
    The template may contain only `AGENTS.md`, `HOME-SETUP.md`, `config.toml` and `skills/**`; anything else (for
    example `rules/*.rules`, which can pre-approve commands) is `bundle_invalid`. In `config.toml`, `[features]` may
-   set only `remote_plugin = false`, and `sandbox_mode` may be only `read-only` or `workspace-write`.
+   set only `remote_plugin = false`, `sandbox_mode` may be only `read-only` or `workspace-write`, and
+   `[mcp_servers.<name>]` may set only `command`, `args` and `env_vars` (local) or `url` and
+   `bearer_token_env_var` (remote), under the bundled-MCP rules below.
 5. **Trust.** Claude refuses or prompts in folders it does not trust (`claude --bg`: "Workspace not trusted";
    interactive: the "Quick safety check" prompt). The runtime either starts in a folder the user already trusts
    or lets the user answer the prompt in the agent's terminal. It never writes `~/.claude.json` itself.
@@ -226,6 +228,62 @@ persona, plugins or skills:
 - The first prompt only asks it to wait for Holler messages.
 - It is `running` once a session of its exact `HOLLER_RUN` is live. There is no `role_text` profile to wait
   for.
+
+## Bundled MCP servers
+
+A profile may declare MCP servers (`mcp`, spec/AGENT-PROFILE.md). Both harnesses get the same servers:
+
+- **Claude**: the role plugin's `<agent>/claude/plugins/<agent>/.mcp.json`, deterministic JSON. A local server is
+  `{"command": ..., "args": [...], "env": {"VAR": "${VAR}"}}` (`env` omitted when empty). A remote server is
+  `{"type": "http", "url": ..., "headers": {"Authorization": "Bearer ${NAME}"}}` (`headers` only with
+  `bearer_token_env`). No other plugin in the bundle carries a `.mcp.json`.
+- **Codex**: `[mcp_servers.<name>]` in the home template's `config.toml`. A local server has `command`, `args` and
+  `env_vars` (when non-empty). A remote server has `url` and `bearer_token_env_var` (when set).
+- **Record**: the agent's `MANIFEST.json` under `mcp`. A local server is `{"<name>": {"command", "args", "env":
+  [names]}}`, a remote one `{"<name>": {"url"[, "bearer_token_env"]}}`. `launch.json` has no MCP field.
+
+The rules (the build and `verify` enforce them; the runtime validates them again before launch and refuses a
+bundle that breaks them):
+
+- server name `^[a-z][a-z0-9-]{0,31}$`, not `holler`; at most 8 servers; a server is remote (`url`, optional
+  `bearer_token_env`) or local (`command`, `args`, `env`), never both;
+- remote: `url` is `https://` to a lowercase DNS host of at least two labels with no trailing dot, its last label
+  starting with a letter (no IP literal in any notation, such as `127.0x1`, and no `localhost`, `*.localhost` or explicit
+  port; the check is lexical, so a name whose DNS points at a private address still passes); at most 2048 bytes; no userinfo, query or fragment, so no `@`, `?`,
+  `#` or `\` anywhere, and no `${`. `bearer_token_env` follows the `env` name rules below;
+- `command` exactly `npx` or `uvx`; `args` at most 32 strings of 1 to 256 bytes of UTF-8, without NUL and without
+  `${` (Claude would expand it);
+- `env` at most 16 distinct names matching `^[A-Z_][A-Z0-9_]{0,63}$`, passed through from the user's environment
+  (values never appear in a bundle); never `HOLLER_*`, `CLAUDE_CODE_*`, `CLAUDECODE` or `CODEX_HOME`, the agent's
+  own identity and continuity handles;
+- exact versions `^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-[0-9A-Za-z.-]+)?$`: no leading zeros, no `+build`; the
+  build accepts an npm prerelease only as non-empty dot-separated identifiers and no PyPI prerelease;
+- `npx`: only `-y`/`--yes` before the package, then one `name@VERSION` or `@scope/name@VERSION` (name segments
+  `^[a-z0-9][a-z0-9._-]*$`; no ranges, dist-tags, URLs, git references or paths); later arguments are not `--` and
+  do not start with `--package`, `-p`, `--registry`, `--userconfig`, `--prefix`, `--call` or `-c`; a version
+  ending in `.tgz`, `.tar`, `.gz`, `.tbz`, `.tbz2`, `.txz`, `.zip` or `.whl` (any case) is refused, since npm would
+  install it as a local file;
+- `uvx`: `name==VERSION [args...]` or `--from name==VERSION <command> [args...]`, the name matching
+  `^[A-Za-z0-9]([A-Za-z0-9._-]*[A-Za-z0-9])?$` with no extras; no other uvx options;
+- the role plugin's `.mcp.json` is the only declaration: no `.mcp.json` (any case) elsewhere in the bundle and no
+  `plugin.json` with `mcpServers`; Claude and Codex declare the same servers.
+
+**Required core.** Bundled MCP servers need Holler core with holler PR 98 (merged into core `main` as `218643f`; the first release that contains it). That core validates the rules above at every start and restart, and
+for a Claude agent that declares local (`npx`/`uvx`) servers it sets `CLAUDE_CODE_MCP_ALLOWLIST_ENV=1`, because Claude otherwise
+passes its whole inherited environment, `HOLLER_*` included, to stdio MCP servers (observed with Claude Code
+2.1.318). The reference launcher (`bin/holler-roles launch <agent> claude`) sets the same variable, and `--print`
+shows it. A bundled server then receives only `HOME`, `PATH`, Claude's plugin variables and its declared `env`.
+An older core does neither: it refuses a Codex template with `mcp_servers`, but starts a Claude agent's `.mcp.json`
+unchecked and with the full environment. **Never run a bundle with MCP servers on a core older than that.**
+
+**Trust model.** A pin stops the package owner from moving the version. It does not stop the agent's project from
+shadowing or redirecting the package: `npx` and `uvx` resolve through the working folder (a project
+`node_modules/.bin`, `.npmrc` or uv configuration), the same risk every Claude Code plugin that uses `npx` carries.
+Where that matters, declare a remote server instead.
+
+The runtime never pre-approves a bundled server's tools: they prompt like any unapproved tool, and only the human's
+Access choice (`--access full`) changes that. `--allowedTools` and the Codex tool policy cover Holler's own tools
+only.
 
 ## Hooks shipped in the bundle
 

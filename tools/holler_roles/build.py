@@ -13,13 +13,14 @@ import tempfile
 import tomllib
 
 import common
+import mcp_servers
 from common import (BRIEF_CAP, DIST, LISTING_HARD, LISTING_SOFT, PLATFORM_PLUGIN, ROOT, copy_file, copy_tree, die, in_overlay,
                     file_sha, json_dump, load_team, overlay_hash, parse_yaml, personal_path, read, reset_dir,
                     skill_frontmatter, source_commit, source_path, split_frontmatter, tree_hash, walk, write)
 from kits import IN_REPO, NAME_RE, load_kits, load_lock
 
 PROFILE_KEYS = {"profile_format", "name", "version", "display_name", "role", "harnesses", "layers", "skills", "manual",
-                "agents", "hooks", "never", "models", "claude", "codex", "holler", "presentation"}
+                "agents", "hooks", "never", "models", "claude", "codex", "holler", "presentation", "mcp"}
 SEMVER = re.compile(r"^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$")
 HOOK_MATCHER = "startup|resume|clear|compact"
 MANUAL_FLAG = "disable-model-invocation: true"
@@ -104,6 +105,7 @@ def read_profile(name):
         print(f"note: {name}: models is a recommendation only; it is recorded in launch.json and not applied")
     for k in ("manual", "agents", "hooks", "never"):
         p[k] = list(p.get(k) or [])
+    p["mcp"] = mcp_servers.check(p.get("mcp"), f"profiles/{name}.md")
     return p, body
 
 
@@ -325,6 +327,9 @@ def build_claude(profile, plan, kits, out, texts, log):
                 "command": '/bin/sh "${CLAUDE_PLUGIN_ROOT}/hooks/session-brief.sh" "${CLAUDE_PLUGIN_ROOT}/brief.md"',
                 "timeout": 10}]})
             check_hook_round_trip(os.path.join(root, "hooks", "session-brief.sh"), os.path.join(root, "brief.md"))
+            if profile["mcp"]:
+                # bundled MCP servers live in the role plugin only; nothing pre-approves their tools
+                write(os.path.join(root, ".mcp.json"), mcp_servers.claude_json(profile["mcp"]))
         elif pl["kind"] == "platform":
             plugin_json(root, {"name": pname, "version": profile["version"],
                                "description": "Holler coordination layer: the platform brief and the holler-* coordination skills (holler-roles).",
@@ -394,7 +399,7 @@ def build_claude(profile, plan, kits, out, texts, log):
 
 # --- Codex home template -----------------------------------------------------------------------------------
 
-CODEX_SKIP_TOP = {".claude-plugin", "hooks", "agents", "brief.md", "platform.md"}
+CODEX_SKIP_TOP = {".claude-plugin", ".mcp.json", "hooks", "agents", "brief.md", "platform.md"}
 
 
 def build_codex(profile, out, texts):
@@ -417,9 +422,12 @@ def build_codex(profile, out, texts):
         if sandbox not in ("read-only", "workspace-write"):
             die(f"{profile['name']}: codex.sandbox must be read-only or workspace-write")
         lines += [f'sandbox_mode = "{sandbox}"']
-    lines += ["", "[skills.bundled]", "enabled = false", "", "[features]", "remote_plugin = false", ""]
+    lines += ["", "[skills.bundled]", "enabled = false", "", "[features]", "remote_plugin = false"]
+    lines += mcp_servers.codex_toml(profile["mcp"]) + [""]
     cfg = "\n".join(lines)
-    tomllib.loads(cfg)
+    parsed = tomllib.loads(cfg)
+    if mcp_servers.from_codex(parsed.get("mcp_servers", {})) != profile["mcp"]:
+        die(f"{profile['name']}: config.toml mcp_servers does not round-trip the profile's mcp")
     write(os.path.join(home, "config.toml"), cfg)
     write(os.path.join(home, "HOME-SETUP.md"), HOME_SETUP.format(name=profile["name"]))
     return home
@@ -545,6 +553,14 @@ def check_never(profile, out):
         die(f"{profile['name']}: build contains names listed under never: {hit}")
 
 
+def check_mcp_files(profile, out):
+    """The role plugin's .mcp.json is the only MCP declaration in the agent's output: no kit, platform or skill folder
+    brings a .mcp.json, and no plugin.json carries mcpServers."""
+    stray = mcp_servers.stray_declarations(out, profile["name"], walk)
+    if stray:
+        die(f"{profile['name']}: MCP servers declared outside the profile's mcp: {stray[:3]}")
+
+
 def check_paths(out):
     """No absolute path from the build machine in the output: this repository, the overlay or the home folder."""
     home = os.path.expanduser("~")
@@ -595,6 +611,7 @@ def build_agent(name, kits, dest_root, log, team):
         log.append(f"warning: {name} lists {listed} skills (target {LISTING_SOFT})")
     write(os.path.join(out, "launch.json"), json_dump(launch_json(profile, summary)))
     check_never(profile, out)
+    check_mcp_files(profile, out)
     check_paths(out)
     files = manifest(out)
     content_hash = tree_hash(out)
@@ -614,7 +631,7 @@ def build_agent(name, kits, dest_root, log, team):
     write(os.path.join(out, "MANIFEST.json"), json_dump({
         "agent": name, "version": profile["version"], "content_hash": content_hash, "kits": srcs,
         "brief_chars": len(texts["brief"]), "platform_chars": len(texts["platform"] or ""),
-        "listed": listed, "manual": manual, "files": files}))
+        "listed": listed, "manual": manual, "files": files, **({"mcp": profile["mcp"]} if profile["mcp"] else {})}))
     return {"agent": name, "version": profile["version"], "dir": out, "content_hash": content_hash,
             "listed": listed, "manual": manual, "summary": summary,
             "brief_chars": len(texts["brief"]), "platform_chars": len(texts["platform"] or "")}
