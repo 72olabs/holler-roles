@@ -3,6 +3,13 @@
 Thanks for helping. Three kinds of change are welcome: a new or better role (a profile and its layers), an
 original skill or guard, and fixes to the build, the specs or the reference launcher.
 
+## How this repository is made
+
+This repository is a generated copy. Its files are kept in a private source repository together with the rest of
+Holler, and each update here is one commit exported from there (`bin/holler-roles export` makes the copy and scans it
+for leaks). Pull requests are welcome all the same: a maintainer reviews yours here, applies it to the source by hand
+with you credited as co-author, and closes it when the next export carries the change. Issues are read here too.
+
 ## Before you open a pull request
 
 ```sh

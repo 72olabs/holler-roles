@@ -13,6 +13,8 @@
                                                   start the agent with its launch.json environment
   holler-roles export <dest> [--deny FILE]       copy the public tree (PUBLIC.txt) into an empty folder, then scan it
                                                   for home paths, secrets and denied words
+  holler-roles publish <clone>                   export, then make a clean clone of the public repository match it
+                                                  (adds, changes, removes files; never commits or pushes)
 
 Every command takes --overlay DIR (or HOLLER_ROLES_OVERLAY): your own profiles, layers, skills and personal layers,
 kept outside this repository (spec/OVERLAY.md). Overlay builds go to dist/local/ and never replace a release.
@@ -91,6 +93,9 @@ def main(argv):
         if cmd == "export":
             from export import cmd_export
             return cmd_export(rest)
+        if cmd == "publish":
+            from export import cmd_publish
+            return cmd_publish(rest)
     except BuildError as e:
         print(e.code, file=sys.stderr)
         return 1

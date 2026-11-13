@@ -111,4 +111,5 @@ and anything visible to other people is proposed to the human first.
 
 ## Licence
 
-Apache-2.0 (LICENSE, NOTICE). Kits keep their own licences. Contributions: CONTRIBUTING.md. Security: SECURITY.md.
+Apache-2.0 (LICENSE, NOTICE). Kits keep their own licences. Contributions: CONTRIBUTING.md (this repository is generated
+from a private source; pull requests are welcome and imported by hand). Security: SECURITY.md.

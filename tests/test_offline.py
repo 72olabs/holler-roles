@@ -704,5 +704,196 @@ class ExportScanTests(unittest.TestCase):
         self.assertEqual(sorted(h[1] for h in hits), [1, 2])
 
 
+def run_git(*args, cwd):
+    import subprocess
+    return subprocess.run(["git", "-c", "user.name=test", "-c", "user.email=test@example.com", "-c", "commit.gpgsign=false",
+                           *args], cwd=cwd, check=True, capture_output=True, text=True).stdout
+
+
+def run_cli(root, *args):
+    import subprocess
+    return subprocess.run([os.path.join(root, "bin", "holler-roles"), *args], capture_output=True, text=True,
+                          env={"PATH": os.environ.get("PATH", ""), "HOME": root})
+
+
+class ExportTests(unittest.TestCase):
+    """The export as a whole: the real tree, and a small fixture repository carrying a copy of the CLI."""
+
+    def fixture(self, files, public):
+        root = tempfile.mkdtemp(prefix="holler-roles-test-source-")
+        self.addCleanup(shutil.rmtree, root, True)
+        shutil.copytree(os.path.join(ROOT, "bin"), os.path.join(root, "bin"))
+        shutil.copytree(os.path.join(ROOT, "tools"), os.path.join(root, "tools"),
+                        ignore=shutil.ignore_patterns("__pycache__"))
+        for rel, text in {**files, "PUBLIC.txt": "\n".join(public) + "\n"}.items():
+            os.makedirs(os.path.dirname(os.path.join(root, rel)) or root, exist_ok=True)
+            with open(os.path.join(root, rel), "w") as f:
+                f.write(text)
+        run_git("init", "-q", cwd=root)
+        run_git("add", "-A", cwd=root)
+        run_git("commit", "-qm", "fixture", cwd=root)
+        return root
+
+    def test_real_tree_exports_clean(self):
+        d = tempfile.mkdtemp(prefix="holler-roles-test-export-")
+        self.addCleanup(shutil.rmtree, d, True)
+        # --allow-dirty so the suite also runs on a work-in-progress checkout; CI's checkout is clean anyway
+        p = run_cli(ROOT, "export", os.path.join(d, "out"), "--allow-dirty")
+        self.assertEqual(p.returncode, 0, p.stdout[-2000:] + p.stderr)
+
+    def test_private_names_are_reported_but_agent_instruction_files_are_not(self):
+        plan = "PL" + "AN.md"   # built at run time: the real one is private, and this file is exported
+        root = self.fixture({
+            "README.md": f"See {plan}.\nSee notes/deep.\nWrite your rules in AGENTS.md or CLAUDE.md.\n"
+                         "Our [rules](./AGENTS.md).\nThe [guide](docs/guide.md), [top](#top), [site](https://example.com/AGENTS.md).\n",
+            # the link is split at run time: in this file it would resolve to the real private CLAUDE.md
+            "docs/guide.md": "The [harness file](" + "../CLAUDE.md#x) and [notes](<../notes/deep/x.md>).\n",
+            plan: "private plan\n", "AGENTS.md": "private instructions\n", "CLAUDE.md": "@AGENTS.md\n",
+            "notes/deep/x.md": "private\n",
+        }, ["README.md", "docs", "PUBLIC.txt"])
+        d = tempfile.mkdtemp(prefix="holler-roles-test-export-")
+        self.addCleanup(shutil.rmtree, d, True)
+        p = run_cli(root, "export", os.path.join(d, "out"))
+        self.assertEqual(p.returncode, 1, p.stdout + p.stderr)
+        hits = sorted(line for line in p.stdout.splitlines() if line.startswith("FAIL"))
+        # bare AGENTS.md / CLAUDE.md are the convention; a link that resolves to the private file is a dead link
+        self.assertEqual(hits, ["FAIL  README.md:1: names a private file: " + plan,
+                                "FAIL  README.md:2: names a private file: notes/deep",
+                                "FAIL  README.md:4: links to a private file: AGENTS.md",
+                                "FAIL  docs/guide.md:1: links to a private file: CLAUDE.md",
+                                "FAIL  docs/guide.md:1: links to a private file: notes/deep/x.md",
+                                "FAIL  docs/guide.md:1: names a private file: notes/deep",
+                                # every match on a line is reported: x.md is a private document's name too
+                                "FAIL  docs/guide.md:1: names a private file: x.md"])
+        self.assertEqual(sorted(os.listdir(os.path.join(d, "out"))), ["PUBLIC.txt", "README.md", "docs"])
+
+    def test_publish_makes_a_clean_clone_match_the_export_and_never_commits(self):
+        root = self.fixture({"README.md": "new readme\n", "docs/a.md": "a\n", "AGENTS.md": "private\n"},
+                            ["README.md", "docs", "PUBLIC.txt"])
+        clone = tempfile.mkdtemp(prefix="holler-roles-test-clone-")
+        self.addCleanup(shutil.rmtree, clone, True)
+        for rel, text in {"README.md": "old readme\n", "stale/gone.md": "gone\n", ".gitignore": "build/\n"}.items():
+            os.makedirs(os.path.dirname(os.path.join(clone, rel)) or clone, exist_ok=True)
+            with open(os.path.join(clone, rel), "w") as f:
+                f.write(text)
+        run_git("init", "-q", cwd=clone)
+        run_git("add", "-A", cwd=clone)
+        run_git("commit", "-qm", "public", cwd=clone)
+        os.makedirs(os.path.join(clone, "build"))
+        with open(os.path.join(clone, "build", "ignored.txt"), "w") as f:
+            f.write("ignored files stay\n")
+        head = run_git("rev-parse", "HEAD", cwd=clone)
+
+        with open(os.path.join(clone, "README.md"), "w") as f:
+            f.write("local edit\n")
+        p = run_cli(root, "publish", clone)
+        self.assertEqual(p.returncode, 1)
+        self.assertIn("uncommitted changes", p.stderr)
+        run_git("checkout", "--", "README.md", cwd=clone)
+
+        p = run_cli(root, "publish", clone)
+        self.assertEqual(p.returncode, 0, p.stdout + p.stderr)
+        self.assertEqual(run_git("rev-parse", "HEAD", cwd=clone), head)
+        # .gitignore is not in the export, so it goes and build/ shows up untracked; the file itself is left alone
+        self.assertEqual(sorted(run_git("status", "--porcelain", "-uall", cwd=clone).splitlines()),
+                         [" D .gitignore", " D stale/gone.md", " M README.md", "?? PUBLIC.txt", "?? build/ignored.txt",
+                          "?? docs/a.md"])
+        self.assertEqual(common.read(os.path.join(clone, "README.md")), "new readme\n")
+        self.assertFalse(os.path.exists(os.path.join(clone, "stale")))
+        self.assertFalse(os.path.exists(os.path.join(clone, "AGENTS.md")))
+        self.assertTrue(os.path.exists(os.path.join(clone, "build", "ignored.txt")))
+        self.assertIn("Sync from holler roles/ at " + run_git("rev-parse", "HEAD", cwd=root).strip(), p.stdout)
+
+
+    def clone(self, files, ignore="", after_commit=None):
+        clone = tempfile.mkdtemp(prefix="holler-roles-test-clone-")
+        self.addCleanup(shutil.rmtree, clone, True)
+        for rel, text in {**files, **({".gitignore": ignore} if ignore else {})}.items():
+            os.makedirs(os.path.dirname(os.path.join(clone, rel)) or clone, exist_ok=True)
+            with open(os.path.join(clone, rel), "w") as f:
+                f.write(text)
+        run_git("init", "-q", cwd=clone)
+        run_git("add", "-A", cwd=clone)
+        run_git("commit", "-qm", "public", cwd=clone)
+        if after_commit:
+            after_commit(clone)
+        self.assertEqual(run_git("status", "--porcelain", cwd=clone), "", "the clone must look clean to git")
+        return clone
+
+    @staticmethod
+    def listing(path):
+        """Every entry under path, .git included: type, and content or link target."""
+        out = {}
+        for top, dirs, files in os.walk(path):
+            for name in dirs + files:
+                full = os.path.join(top, name)
+                rel = os.path.relpath(full, path)
+                if os.path.islink(full):
+                    out[rel] = ("link", os.readlink(full))
+                elif os.path.isdir(full):
+                    out[rel] = ("dir",)
+                else:
+                    with open(full, "rb") as f:
+                        out[rel] = ("file", f.read())
+        return out
+
+    def assert_refused_unchanged(self, root, clone, needle, outside=None):
+        before = self.listing(clone), self.listing(outside) if outside else None
+        p = run_cli(root, "publish", clone)
+        self.assertEqual(p.returncode, 1, p.stdout + p.stderr)
+        self.assertIn(needle, p.stderr)
+        self.assertEqual((self.listing(clone), self.listing(outside) if outside else None), before)
+
+    def publish_source(self):
+        return self.fixture({"README.md": "new readme\n", "docs/a.md": "a\n"}, ["README.md", "docs", "PUBLIC.txt"])
+
+    def test_publish_refuses_a_symlinked_ancestor_and_leaves_the_clone_unchanged(self):
+        root = self.publish_source()
+        outside = tempfile.mkdtemp(prefix="holler-roles-test-outside-")
+        self.addCleanup(shutil.rmtree, outside, True)
+        with open(os.path.join(outside, "a.md"), "w") as f:
+            f.write("outside, must survive\n")
+        clone = self.clone({"README.md": "old\n", "aaa": "obsolete\n"}, "docs\n",
+                           lambda c: os.symlink(outside, os.path.join(c, "docs")))
+        self.assert_refused_unchanged(root, clone, "docs", outside)
+        os.unlink(os.path.join(clone, "docs"))
+        os.symlink(".git", os.path.join(clone, "docs"))
+        self.assert_refused_unchanged(root, clone, "docs")
+        self.assertFalse(os.path.exists(os.path.join(clone, ".git", "a.md")))
+
+    def test_publish_refuses_ignored_files_and_folders_at_exported_paths(self):
+        root = self.publish_source()
+        def ignored_file(c):
+            with open(os.path.join(c, "README.md"), "w") as f:
+                f.write("my local notes\n")
+        clone = self.clone({"aaa": "obsolete\n"}, "README.md\n", ignored_file)
+        self.assert_refused_unchanged(root, clone, "README.md")
+        def ignored_dir(c):
+            os.makedirs(os.path.join(c, "docs", "a.md"))
+            with open(os.path.join(c, "docs", "a.md", "keep.txt"), "w") as f:
+                f.write("my local notes\n")
+        clone = self.clone({"aaa": "obsolete\n"}, "docs/a.md/\n", ignored_dir)
+        self.assert_refused_unchanged(root, clone, "docs/a.md")
+
+    def test_publish_refuses_a_submodule_before_deleting_anything(self):
+        root = self.publish_source()
+        def submodule(c):
+            head = run_git("rev-parse", "HEAD", cwd=c).strip()
+            run_git("update-index", "--add", "--cacheinfo", f"160000,{head},zzz", cwd=c)
+            run_git("commit", "-qm", "submodule", cwd=c)
+            os.makedirs(os.path.join(c, "zzz"))
+        clone = self.clone({"README.md": "old\n", "aaa": "obsolete\n"}, after_commit=submodule)
+        self.assert_refused_unchanged(root, clone, "zzz")
+
+    def test_publish_handles_a_tracked_file_becoming_a_folder_and_the_reverse(self):
+        root = self.publish_source()
+        clone = self.clone({"docs": "docs was a file\n", "README.md/old.md": "README.md was a folder\n",
+                            "README.md/sub/deeper.md": "nested\n"})
+        p = run_cli(root, "publish", clone)
+        self.assertEqual(p.returncode, 0, p.stdout + p.stderr)
+        self.assertEqual(common.read(os.path.join(clone, "README.md")), "new readme\n")
+        self.assertEqual(common.read(os.path.join(clone, "docs", "a.md")), "a\n")
+
+
 if __name__ == "__main__":
     unittest.main()
